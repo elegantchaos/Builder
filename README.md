@@ -29,6 +29,18 @@ When running over the example package, the tool:
   - builds & runs any post-build tools
 - runs the built output
 
+### Discussion
+
+In this demo, the Configuration target from the example project actually embeds the configuration as a dictionary inside itself, and returns it when run.
+
+This is perfectly ok and illustrates the fact that it's actually being executed and therefore could modify the configuration dynamically based on the environment it's run from, or any other factors that it cares about.
+
+However, with a bit of tweaking of the design, it would probably also be possible for the Configuration target to actually be a standard executable (one of the dependencies), which could adopt a pre-defined strategy to find the configuration. For example it could look for a file called `Configuration.json` in the working directory and call that.
+
+In this way, it would be possible for this system to operate without any code needing to be written - for simple cases - whilst still allowing infinite complexity when required.
+
+
+
 ### Caveats
 
 I hacked this together as a demo, so it may not build on your system.
