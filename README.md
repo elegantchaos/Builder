@@ -19,6 +19,7 @@ To test the builder on it:
 swift build -Xswiftc "-target" -Xswiftc "x86_64-apple-macosx10.12"
 cd Example
 ../.build/debug/Builder
+.build/debug/Example
 ```
 
 What this does is to run Builder over the Example project, which:
@@ -29,3 +30,9 @@ What this does is to run Builder over the Example project, which:
   - builds & runs any pre-build tools
   - builds the specified targets
   - builds & runs any post-build tools
+- runs the built output
+
+### Caveats
+
+I hacked this together as a demo, so it may not build on your system.
+In theory it should work on Linux, but it currently has Foundation dependencies. These should be surmountable in a real implementation.

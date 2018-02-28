@@ -3,15 +3,14 @@ import Foundation
 let output : [String:Any] = [
     "settings" : [
       "target" : "x86_64-apple-macosx10.12"
-
     ],
 
     "prebuild" : [
-
+      "Tool"
     ],
 
     "postbuild" : [
-
+      "Tool"
     ],
 
     "products" : [

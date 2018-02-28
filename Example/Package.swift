@@ -24,6 +24,9 @@ let package = Package(
         .target(
             name: "Configure",
             dependencies: []),
+        .target(
+            name: "Tool",
+            dependencies: []),
         .testTarget(
             name: "ExampleTests",
             dependencies: ["Example"]),

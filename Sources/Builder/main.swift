@@ -59,20 +59,19 @@ enum Failure : Error {
  */
 
 class Builder {
-    
+
     /**
-     Invoke `swift` with a command and some optional arguments.
+     Invoke a command and some optional arguments.
      On success, returns the captured output from stdout.
      On failure, throws an error.
      */
     
-    func swift(_ command : String, arguments: [String] = []) throws -> String {
-        logger.log("swift \(command)")
+    func run(_ command : String, arguments: [String] = []) throws -> String {
         let pipe = Pipe()
         let handle = pipe.fileHandleForReading
         let process = Process()
-        process.launchPath = "/usr/bin/swift"           // should be discoverable
-        process.arguments = [command] + arguments
+        process.launchPath = command
+        process.arguments = arguments
         process.standardOutput = pipe
         process.launch()
         let data = handle.readDataToEndOfFile()
@@ -89,6 +88,18 @@ class Builder {
         }
         
         return output ?? ""
+    }
+
+    /**
+     Invoke `swift` with a command and some optional arguments.
+     On success, returns the captured output from stdout.
+     On failure, throws an error.
+     */
+    
+    func swift(_ command : String, arguments: [String] = []) throws -> String {
+        let swift = "/usr/bin/swift" // should be discovered from the environment
+        logger.log("swift \(command)")
+        return try run(swift, arguments: [command] + arguments)
     }
     
     /**
@@ -115,14 +126,26 @@ class Builder {
         let _ = try swift("build", arguments: ["--target", "Configure"])
         
         // if we built it, run it, and parse its output as a JSON configuration
-        let json = try swift("run", arguments: ["Configure"])
+        // (we don't use `swift run` here as we don't want to capture any of its output)
+        let json = try run(".build/debug/Configure")
         let configuration = try parse(configuration: json)
+        
+        // run any prebuild tools
+        for tool in configuration.prebuild {
+            let _ = try swift("run", arguments: [tool, "prebuild"])
+        }
         
         // process the configuration to do the actual build
         let settings = configuration.compilerSettings()
         for product in configuration.products {
             let _ = try swift("build", arguments: ["--product", product] + settings)
         }
+
+        // run any postbuild tools
+        for tool in configuration.postbuild {
+            let _ = try swift("run", arguments: [tool, "postbuild"])
+        }
+
     }
     
 }

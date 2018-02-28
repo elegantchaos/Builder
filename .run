@@ -1,3 +1,4 @@
 swift build -Xswiftc "-target" -Xswiftc "x86_64-apple-macosx10.12"
 cd Example
 ../.build/debug/Builder
+.build/debug/Example
