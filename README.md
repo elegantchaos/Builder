@@ -35,4 +35,11 @@ What this does is to run Builder over the Example project, which:
 ### Caveats
 
 I hacked this together as a demo, so it may not build on your system.
+
 In theory it should work on Linux, but it currently has Foundation dependencies. These should be surmountable in a real implementation.
+
+Things that have been glossed over:
+
+- passing in useful environment to the helper executables (Configure and Tool)
+- building/running the tool executables from sub-dependencies
+- niceties such as error checking, help, etc, etc...
