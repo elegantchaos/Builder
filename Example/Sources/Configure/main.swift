@@ -1,7 +1,7 @@
 import Foundation
 
 let output : [String:Any] = [
-    "configuration" : [
+    "settings" : [
       "target" : "x86_64-apple-macosx10.12"
 
     ],
