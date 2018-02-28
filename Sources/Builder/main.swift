@@ -47,6 +47,20 @@ func parse(configuration json : String) throws -> [String:Any] {
     return configuration
 }
 
+func compilerSettings(from configuration : [String:Any]) -> [String] {
+    var args : [String] = []
+    if let settings = configuration["configuration"] as? [String:Any] {
+        settings.forEach({ (key, value) in
+            args.append(contentsOf: ["-Xswiftc", "-\(key)", "-Xswiftc", "\(value)"])
+        })
+    }
+    return args
+}
+
+func products(from configuration : [String:Any]) -> [String] {
+    return configuration["products"] as? [String] ?? []
+}
+
 func build() throws {
     // try to build the Configure target
     let _ = try swift("build", arguments: ["--target", "Configure"])
@@ -56,7 +70,12 @@ func build() throws {
     let configuration = try parse(configuration: json)
     
     // process the configuration to do the actual build
-    logger.log(configuration)
+    let settings = compilerSettings(from: configuration)
+    
+    let productsToBuild = products(from: configuration)
+    for product in productsToBuild {
+        let _ = try swift("build", arguments: ["--product", product] + settings)
+    }
 }
 
 do {
