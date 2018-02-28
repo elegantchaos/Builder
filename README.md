@@ -76,8 +76,8 @@ Things that have been glossed over:
 - passing in useful environment to the helper executables (Configure and Tool)
 - building/running the tool executables from sub-dependencies -- in principle this should be fine I think, I just wanted to keep the demo self-contained
 - niceties such as error checking, help, etc, etc...
-
-In theory it should be perfectly possible for the tool to also:
-- generate an xcconfig file for the xcode project
-- generate the xcode project
-- generate proper dependencies and build phases to get xcode to run the tools just like the command line version does (hard, but by no means impossible)
+- running different tools, or using different configurations, for each product
+- generating a fully-functional xcode project with
+  - dependencies and sub-projects to build the tools
+  - an xcconfig file built from the settings, applied to the products
+  - build phases to run the tools as part of the build (this is tricky, but by no means impossible)
