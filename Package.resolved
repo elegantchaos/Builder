@@ -1,7 +1,15 @@
 {
   "object": {
     "pins": [
-
+      {
+        "package": "Logger",
+        "repositoryURL": "git@github.com:elegantchaos/logger.git",
+        "state": {
+          "branch": null,
+          "revision": "a60f1938756bff222b9b2c0fce0b19ce9b00a21d",
+          "version": "1.0.2"
+        }
+      }
     ]
   },
   "version": 1
