@@ -31,13 +31,36 @@ When running over the example package, the tool:
 
 ### Discussion
 
-In this demo, the Configuration target from the example project actually embeds the configuration as a dictionary inside itself, and returns it when run.
+In this demo, the Configuration target from the example project actually embeds the configuration as a dictionary inside itself, and returns it as JSON when run.
 
-This is perfectly ok and illustrates the fact that it's actually being executed and therefore could modify the configuration dynamically based on the environment it's run from, or any other factors that it cares about.
+This is the complete source for it:
 
-However, with a bit of tweaking of the design, it would probably also be possible for the Configuration target to actually be a standard executable (one of the dependencies), which could adopt a pre-defined strategy to find the configuration. For example it could look for a file called `Configuration.json` in the working directory and call that.
+```
+import Foundation
 
-In this way, it would be possible for this system to operate without any code needing to be written - for simple cases - whilst still allowing infinite complexity when required.
+let configuration : [String:Any] = [
+    "settings" : [
+      "target" : "x86_64-apple-macosx10.12"
+    ],
+
+    "prebuild" : ["Tool"],
+    "postbuild" : ["Tool"],
+    "products" : ["Example"]
+]
+
+let encoded = try JSONSerialization.data(withJSONObject: configuration, options: .prettyPrinted)
+if let json = String(data: encoded, encoding: String.Encoding.utf8) {
+    print(json)
+}
+```
+
+This illustrates the fact that the configuration actually being generated dynamically and therefore could change based on the environment it's run in.
+
+However, with a minor bit of tweaking of the design, it would also be possible for the Configuration target itself to be an external dependency.
+
+This would effectively define a pre-defined strategy to find the configuration (the strategy being whatever the dependent tool does when it's run). For example, one strategy could just be to look for a file called `Configuration.json` in the working directory and return the contents of that.
+
+In this way, it would be possible for this system to operate without any code needing to be written for simple cases - whilst still allowing infinite complexity when required.
 
 
 
