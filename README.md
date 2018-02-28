@@ -22,12 +22,13 @@ What this does is to build the Builder tool itself, then run it to build the Exa
 When running over the example package, the tool:
 
 - builds & runs the Configuration target from the package manifest
-- uses the output of this run to configure the build of Example itself:
-  - applies the returned compiler settings
-  - builds & runs any pre-build tools
-  - builds the specified targets
-  - builds & runs any post-build tools
-- runs the built output
+- uses the output of this to obtain the build configuration
+- extracts build settings from this configuration
+- builds & runs any pre-build tools listed in the configuration
+- builds the products listed in the configuration, applying the settings it extracted previously
+- builds & runs any post-build tools listed in the configuration
+
+Finally, the script runs the built example product.
 
 ### Discussion
 
