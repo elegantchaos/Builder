@@ -7,7 +7,7 @@
 import Foundation
 import Logger
 
-let logger = Logger("com.elegantchaos.builder.main", handlers:[PrintHandler("print")])
+let output = Logger.stdout
 let verbose = Logger("com.elegantchaos.builder.verbose")
 
 /**
@@ -88,19 +88,19 @@ class Builder {
         let errData = errHandle.readDataToEndOfFile()
 
         process.waitUntilExit()
-        let output = String(data:data, encoding:String.Encoding.utf8)
+        let capturedOutput = String(data:data, encoding:String.Encoding.utf8)
         let status = process.terminationStatus
         if status != 0 {
-            logger.log("\(command) failed \(status)")
+            output.log("\(command) failed \(status)")
             let errorOutput = String(data:errData, encoding:String.Encoding.utf8)
-            throw Failure.failed(output: output, error: errorOutput)
+            throw Failure.failed(output: capturedOutput, error: errorOutput)
         }
 
-        if output != nil {
-            verbose.log("\(command) \(arguments)> \(output!)")
+        if capturedOutput != nil {
+            verbose.log("\(command) \(arguments)> \(capturedOutput!)")
         }
 
-        return output ?? ""
+        return capturedOutput ?? ""
     }
 
     /**
@@ -142,35 +142,37 @@ class Builder {
 
     func build() throws {
         // try to build the Configure target
-        logger.log("configuring")
+        output.log("Configuring.")
         let _ = try swift("build", arguments: ["--product", "Configure"])
 
         // if we built it, run it, and parse its output as a JSON configuration
         // (we don't use `swift run` here as we don't want to capture any of its output)
         let json = try run(".build/debug/Configure")
-        logger.log("parsing config")
         let configuration = try parse(configuration: json)
 
         // run any prebuild tools
-        logger.log("preparing")
+        output.log("\nPrebuild:")
         for tool in configuration.prebuild {
+            output.log("- running \(tool)")
             let _ = try swift("run", arguments: [tool, "prebuild"])
         }
 
         // process the configuration to do the actual build
-        logger.log("building")
+        output.log("\nBuild:")
         let settings = configuration.compilerSettings()
         for product in configuration.products {
+            output.log("- building \(product).")
             let _ = try swift("build", arguments: ["--product", product] + settings)
         }
 
         // run any postbuild tools
-        logger.log("packaging")
+        output.log("\nPostbuild:")
         for tool in configuration.postbuild {
+            output.log("- running \(tool)")
             let _ = try swift("run", arguments: [tool, "postbuild"])
         }
 
-        logger.log("done.")
+        output.log("\nDone.\n\n")
     }
 
 }
@@ -179,5 +181,5 @@ do {
     let builder = Builder()
     try builder.build()
 } catch {
-    logger.log("Failed: \(error)")
+    output.log("Failed: \(error)")
 }

@@ -21,7 +21,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		2203A83F204752EE000417A7 /* PBXContainerItemProxy */ = {
+		2203A84020487716000417A7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
 			proxyType = 1;
@@ -42,7 +42,7 @@
 		OBJ_21 /* NSLogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSLogHandler.swift; sourceTree = "<group>"; };
 		OBJ_22 /* OSLogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSLogHandler.swift; sourceTree = "<group>"; };
 		OBJ_23 /* PrintHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintHandler.swift; sourceTree = "<group>"; };
-		OBJ_25 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; name = Package.swift; path = "/Volumes/caconym/Users/sam/Projects/Builder/.build/checkouts/logger.git--1506349921156359038/Package.swift"; sourceTree = "<group>"; };
+		OBJ_25 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; name = Package.swift; path = "/Volumes/caconym/Users/sam/Projects/Builder/.build/checkouts/Logger.git-5688927002058744994/Package.swift"; sourceTree = "<group>"; };
 		OBJ_6 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		OBJ_8 /* Builder.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Builder.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -85,19 +85,19 @@
 		OBJ_14 /* Dependencies */ = {
 			isa = PBXGroup;
 			children = (
-				OBJ_15 /* Logger 1.0.2 */,
+				OBJ_15 /* Logger 1.0.4 */,
 			);
 			name = Dependencies;
 			sourceTree = "<group>";
 		};
-		OBJ_15 /* Logger 1.0.2 */ = {
+		OBJ_15 /* Logger 1.0.4 */ = {
 			isa = PBXGroup;
 			children = (
 				OBJ_16 /* Logger */,
 				OBJ_24 /* Example */,
 				OBJ_25 /* Package.swift */,
 			);
-			name = "Logger 1.0.2";
+			name = "Logger 1.0.4";
 			sourceTree = SOURCE_ROOT;
 		};
 		OBJ_16 /* Logger */ = {
@@ -112,7 +112,7 @@
 				OBJ_23 /* PrintHandler.swift */,
 			);
 			name = Logger;
-			path = ".build/checkouts/logger.git--1506349921156359038/Sources/Logger";
+			path = ".build/checkouts/Logger.git-5688927002058744994/Sources/Logger";
 			sourceTree = SOURCE_ROOT;
 		};
 		OBJ_24 /* Example */ = {
@@ -120,7 +120,7 @@
 			children = (
 			);
 			name = Example;
-			path = ".build/checkouts/logger.git--1506349921156359038/Sources/Example";
+			path = ".build/checkouts/Logger.git-5688927002058744994/Sources/Example";
 			sourceTree = SOURCE_ROOT;
 		};
 		OBJ_26 /* Products */ = {
@@ -299,7 +299,7 @@
 		OBJ_37 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "Logger::Logger" /* Logger */;
-			targetProxy = 2203A83F204752EE000417A7 /* PBXContainerItemProxy */;
+			targetProxy = 2203A84020487716000417A7 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
