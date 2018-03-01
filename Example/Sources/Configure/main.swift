@@ -1,10 +1,13 @@
 import Foundation
 
-let configuration : [String:Any] = [
-    "settings" : [
-      "target" : "x86_64-apple-macosx10.12"
-    ],
+#if os(macOS)
+let settings = ["target" : "x86_64-apple-macosx10.12"]
+#else
+let settings : [String:String] = [:]
+#endif
 
+let configuration : [String:Any] = [
+    "settings" : settings,
     "prebuild" : ["Tool"],
     "postbuild" : ["Tool"],
     "products" : ["Example"]

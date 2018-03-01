@@ -6,15 +6,15 @@ let verbose = Logger("com.elegantchaos.builder.verbose")
 
 /**
  Data structure returned by the Configuration target.
- 
+
  This structure describes the products to build, the
  settings to apply to them, and a list of executables
  to build and run before and after the build.
- 
+
  The executables should themselves be specified as dependencies
  of the Configuration target, and will be built as part of building
  the configuration.
- 
+
  In this way the entire toolchain is bootstrappable.
  */
 
@@ -23,7 +23,7 @@ struct Configuration : Decodable {
     let products : [String]
     let prebuild : [String]
     let postbuild : [String]
-    
+
     func compilerSettings() -> [String] {
         var args : [String] = []
         settings.forEach({ (key, value) in
@@ -31,7 +31,7 @@ struct Configuration : Decodable {
         })
         return args
     }
-    
+
 }
 
 /**
@@ -45,17 +45,17 @@ enum Failure : Error {
 
 /**
  Builder.
- 
+
  The basic algorithm is:
- 
+
  - build and run the "Configuration" dependency, capturing the output
  - parse this output from JSON into a configuration structure
  - iterate through the targets in configuration.prebuild, building and executing each one
  - iterate through the products in configuration.products
  - iterate through the targets in configuration.postbuild, building and executing each one
- 
+
  Building is done with `swift build`, and running with `swift run`.
- 
+
  */
 
 class Builder {
@@ -65,28 +65,35 @@ class Builder {
      On success, returns the captured output from stdout.
      On failure, throws an error.
      */
-    
+
     func run(_ command : String, arguments: [String] = []) throws -> String {
         let pipe = Pipe()
         let handle = pipe.fileHandleForReading
+        let errPipe = Pipe()
+        let errHandle = errPipe.fileHandleForReading
+
         let process = Process()
         process.launchPath = command
         process.arguments = arguments
         process.standardOutput = pipe
+        process.standardError = errPipe
         process.launch()
         let data = handle.readDataToEndOfFile()
+        let errData = errHandle.readDataToEndOfFile()
+
         process.waitUntilExit()
         let output = String(data:data, encoding:String.Encoding.utf8)
         let status = process.terminationStatus
         if status != 0 {
             logger.log("\(command) failed \(status)")
-            throw Failure.failed(output: output, error: nil)
+            let errorOutput = String(data:errData, encoding:String.Encoding.utf8)
+            throw Failure.failed(output: output, error: errorOutput)
         }
-        
+
         if output != nil {
-            verbose.log("\(command)> \(output!)")
+            verbose.log("\(command) \(arguments)> \(output!)")
         }
-        
+
         return output ?? ""
     }
 
@@ -95,60 +102,75 @@ class Builder {
      On success, returns the captured output from stdout.
      On failure, throws an error.
      */
-    
+
     func swift(_ command : String, arguments: [String] = []) throws -> String {
+
+      #if os(macOS)
         let swift = "/usr/bin/swift" // should be discovered from the environment
-        logger.log("swift \(command)")
+        #else
+        let swift = "/home/sam/Downloads/swift/usr/bin/swift"
+        #endif
+
+        verbose.log("running swift \(command)")
         return try run(swift, arguments: [command] + arguments)
     }
-    
+
     /**
      Parse some json into a Configuration structure.
      */
-    
+
     func parse(configuration json : String) throws -> Configuration {
         guard let data = json.data(using: String.Encoding.utf8) else {
             throw Failure.decodingFailed
         }
-        
+
         let decoder = JSONDecoder()
         let decoded = try decoder.decode(Configuration.self, from: data)
-        
+
         return decoded
     }
-    
+
     /**
      Perform the build.
      */
-    
+
     func build() throws {
         // try to build the Configure target
-        let _ = try swift("build", arguments: ["--target", "Configure"])
-        
+        logger.log("configuring")
+        let _ = try swift("build", arguments: ["--product", "Configure"])
+
         // if we built it, run it, and parse its output as a JSON configuration
         // (we don't use `swift run` here as we don't want to capture any of its output)
         let json = try run(".build/debug/Configure")
+        logger.log("parsing config")
         let configuration = try parse(configuration: json)
-        
+
         // run any prebuild tools
+        logger.log("preparing")
         for tool in configuration.prebuild {
             let _ = try swift("run", arguments: [tool, "prebuild"])
         }
-        
+
         // process the configuration to do the actual build
+        logger.log("building")
         let settings = configuration.compilerSettings()
         for product in configuration.products {
             let _ = try swift("build", arguments: ["--product", product] + settings)
         }
 
         // run any postbuild tools
+        logger.log("packaging")
         for tool in configuration.postbuild {
             let _ = try swift("run", arguments: [tool, "postbuild"])
         }
 
+        logger.log("done.")
     }
-    
+
 }
+
+logger.enabled = true
+verbose.enabled = true
 
 do {
     let builder = Builder()
@@ -156,4 +178,3 @@ do {
 } catch {
     logger.log("Failed: \(error)")
 }
-
