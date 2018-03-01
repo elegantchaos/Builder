@@ -6,6 +6,10 @@ The executable tool built by this package is intended to be used _to build other
 
 An example package is provided, which you can run the tool on.
 
+The prototype is a standalone tool but obviously a real implementation could be integrated into spm itself.
+
+### Building 
+
 To build & test the builder:
 
 ```
