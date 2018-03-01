@@ -72,9 +72,9 @@ In this way, it would be possible for this system to operate without any code ne
 
 I hacked this together as a demo, so it may not build on your system.
 
-In theory it should work on Linux, but it currently has Foundation dependencies. These should be surmountable in a real implementation.
+It builds on MacOS and Linux, for me - ymmv.
 
-Things that have been glossed over:
+Lots of things have been glossed over, including:
 
 - passing in useful environment to the helper executables (Configure and Tool)
 - building/running the tool executables from sub-dependencies -- in principle this should be fine I think, I just wanted to keep the demo self-contained
@@ -84,3 +84,4 @@ Things that have been glossed over:
   - dependencies and sub-projects to build the tools
   - an xcconfig file built from the settings, applied to the products
   - build phases to run the tools as part of the build (this is tricky, but by no means impossible)
+- the configuration and tool items are defined as targets, but built/run as products. This seems to work but is probably unsupported behaviour.
