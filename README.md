@@ -8,6 +8,7 @@ An example package is provided, which you can run the tool on.
 
 The prototype is a standalone tool but obviously a real implementation could be integrated into spm itself.
 
+
 ### Building
 
 To build & test the builder:
@@ -22,31 +23,52 @@ swift run --package-path ../. --static-swift-stdlib -Xswiftc "-target" -Xswiftc 
 
 What this does is to build and run the Builder tool itself, which then builds the Example package.
 
-When running over the example package, the tool:
-
-- builds & runs the Configuration target from the package manifest
-- uses the output of this to obtain the build configuration
-- extracts build settings from this configuration
-- builds & runs any pre-build tools listed in the configuration
-- builds the products listed in the configuration, applying the settings it extracted previously
-- builds & runs any post-build tools listed in the configuration
-
 Finally, the script runs the built example product.
 
-### Discussion
+
+## Discussion
+
+The tool works by looking for a special "Configuration" target in the normal `Package.swift` file.
+
+If it finds this target, it uses `sketch build` and/or `sketch run` to:
+
+- build & run the Configuration target from the package manifest
+- parse the output of this to obtain the build configuration to use
+- build & run any pre-build tools listed in the configuration
+- build the products listed in the configuration, applying any build settings from the configuration
+- build & run any post-build tools listed in the configuration
+
+The idea behind this approach is that:
+
+- by moving the code for calculating the configuration into its own module, it should be possible to eliminate any non-deterministic swift from the manifest
+- any modules required to determine the configuration can be listed in the manifest as dependencies of the Configuration target, in the normal way
+- any tools required for custom build steps can also be listed in the manifest as dependencies
+
+In this way, once you have spm on your platform (and assuming that this functionality was built into spm), you don't need to install anything else (with `brew`, `apt-get` etc).
+
+The entire chain of build dependencies, including additional tools (such as `mogenerator`, `protobuf`, etc), can be fetched and built locally by spm itself.
+
+This is intended to encourage, as much as possible, people to stay platform-neutral within the Swift ecosystem. It also makes it simple for people to share re-usable build tools, since they're just Swift packages - hopefully this would result in a range of tools to suit most needs, so the requirement to actually write bespoke code would be minimal.
+
+Of course, if you *do* have special requirements, such as tools that need to be installed or run with another package manager, it's no problem. Since you can also build and run arbitrary modules as part of the build process, and since they are just normal swift code, you can do anything that you need to by just writing one or more Swift scripts.
+
+## Dynamic Configuration
 
 In this demo, the Configuration target from the example project is bespoke code. It actually embeds the configuration as a dictionary inside itself, and returns it as JSON when run.
 
 This is the complete source for it:
 
-```
+```swift
 import Foundation
 
-let configuration : [String:Any] = [
-    "settings" : [
-      "target" : "x86_64-apple-macosx10.12"
-    ],
+#if os(macOS)
+let settings = ["target" : "x86_64-apple-macosx10.12"]
+#else
+let settings : [String:String] = [:]
+#endif
 
+let configuration : [String:Any] = [
+    "settings" : settings,
     "prebuild" : ["Tool"],
     "postbuild" : ["Tool"],
     "products" : ["Example"]
@@ -58,21 +80,29 @@ if let json = String(data: encoded, encoding: String.Encoding.utf8) {
 }
 ```
 
-This illustrates the fact that the configuration is actually being generated dynamically (by running code) and therefore could change based on the environment it's run in (in this case it's a *static* dictionary, but it doesnt have to be).
+This illustrates the fact that the configuration is actually being generated dynamically (by running code) and therefore could change based on the environment it's run in.
 
-However, in theory you wouldn't have to use bespoke code every time. With a minor bit of tweaking of the design, it would also be possible for the Configuration target itself to be an external dependency, and thus re-usable.
+In this case it just returns a *static* dictionary, albeit one who's contents are varied at compile time depending on the platform. In theory though the content could also be varied based on runtime values.
 
-This would effectively represent a pre-defined strategy for finding the configuration (the strategy being whatever the dependent tool does when it's run). For example, one strategy could just be to look for a file called `Configuration.json` in the working directory and return the contents of that.
+This might lead you to think that bespoke configuration would be required every time.
 
-In this way, it would be possible for this system to operate without any code needing to be written for simple cases - whilst still allowing infinite complexity when required.
+However, there's no reason in principle why this Configuration target itself could not be derived from behaviour provided by another dependency, and thus completely re-usable.
+
+For example, one strategy could just be to look for a file called `Configuration.json` in the working directory and return the contents of that. Someone could implement a configuration module `JSONConfiguration` which does that.
+
+Then the entire `Configuration.swift` file of our module might just consist of:
+
+```swift
+import JSONConfiguration
+JSONConfiguration.run()
+```
+
+In this way, it should be possible for this system to operate with the absolute minimum of code needing to be written for simple cases - whilst still allowing infinite complexity when required.
 
 
+## Caveats
 
-### Caveats
-
-I hacked this together as a demo, so it may not build on your system.
-
-It builds on MacOS and Linux, for me - ymmv.
+I hacked this together as a demo. It builds on MacOS and Linux, for me - your mileage may vary.
 
 Lots of things have been glossed over, including:
 
@@ -85,3 +115,5 @@ Lots of things have been glossed over, including:
   - an xcconfig file built from the settings, applied to the products
   - build phases to run the tools as part of the build (this is tricky, but by no means impossible)
 - the configuration and tool items are defined as targets, but built/run as products. This seems to work but is probably unsupported behaviour.
+
+Please leave comments and suggestions on the Swift forums, or as issues in github.
