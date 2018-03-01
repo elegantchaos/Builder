@@ -1,4 +1,4 @@
-swift build -Xswiftc "-target" -Xswiftc "x86_64-apple-macosx10.12"
+# bootstrap script to build and run the builder
 cd Example
-../.build/debug/Builder
+swift run --package-path ../. --static-swift-stdlib -Xswiftc "-target" -Xswiftc "x86_64-apple-macosx10.12"
 .build/debug/Example
