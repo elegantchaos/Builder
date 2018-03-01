@@ -1,7 +1,7 @@
 import Foundation
 import Logger
 
-let logger = Logger("com.elegantchaos.builder.main")
+let logger = Logger("com.elegantchaos.builder.main", handlers:[PrintHandler("print")])
 let verbose = Logger("com.elegantchaos.builder.verbose")
 
 /**
