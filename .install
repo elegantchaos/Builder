@@ -1,0 +1,4 @@
+# bootstrap script to install the builder into /usr/local/bin
+
+./.make
+sudo cp .build/debug/Builder /usr/local/bin/build
