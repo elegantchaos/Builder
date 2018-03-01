@@ -36,7 +36,7 @@ Finally, the script runs the built example product.
 
 ### Discussion
 
-In this demo, the Configuration target from the example project actually embeds the configuration as a dictionary inside itself, and returns it as JSON when run.
+In this demo, the Configuration target from the example project is bespoke code. It actually embeds the configuration as a dictionary inside itself, and returns it as JSON when run.
 
 This is the complete source for it:
 
@@ -59,11 +59,11 @@ if let json = String(data: encoded, encoding: String.Encoding.utf8) {
 }
 ```
 
-This illustrates the fact that the configuration actually being generated dynamically and therefore could change based on the environment it's run in.
+This illustrates the fact that the configuration is actually being generated dynamically (by running code) and therefore could change based on the environment it's run in (in this case it's a *static* dictionary, but it doesnt have to be).
 
-However, with a minor bit of tweaking of the design, it would also be possible for the Configuration target itself to be an external dependency.
+However, in theory you wouldn't have to use bespoke code every time. With a minor bit of tweaking of the design, it would also be possible for the Configuration target itself to be an external dependency, and thus re-usable.
 
-This would effectively define a pre-defined strategy to find the configuration (the strategy being whatever the dependent tool does when it's run). For example, one strategy could just be to look for a file called `Configuration.json` in the working directory and return the contents of that.
+This would effectively represent a pre-defined strategy for finding the configuration (the strategy being whatever the dependent tool does when it's run). For example, one strategy could just be to look for a file called `Configuration.json` in the working directory and return the contents of that.
 
 In this way, it would be possible for this system to operate without any code needing to be written for simple cases - whilst still allowing infinite complexity when required.
 
