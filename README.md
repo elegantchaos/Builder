@@ -25,12 +25,13 @@ What this does is to build and run the Builder tool itself, which then builds th
 
 Finally, the script runs the built example product.
 
+Please leave comments and suggestions on the Swift forums, or as issues in github.
 
 ## Discussion
 
 The tool works by looking for a special "Configuration" target in the normal `Package.swift` file.
 
-If it finds this target, it uses `sketch build` and/or `sketch run` to:
+If it finds this target, it uses `swift build` and/or `swift run` to:
 
 - build & run the Configuration target from the package manifest
 - parse the output of this to obtain the build configuration to use
@@ -116,4 +117,49 @@ Lots of things have been glossed over, including:
   - build phases to run the tools as part of the build (this is tricky, but by no means impossible)
 - the configuration and tool items are defined as targets, but built/run as products. This seems to work but is probably unsupported behaviour.
 
-Please leave comments and suggestions on the Swift forums, or as issues in github.
+## Other Ideas
+
+As mentioned above, this is a prototype, so it's a standalone tool.
+
+In theory though it would be integrated into `swift` itself. It could possibly even replace the existing `build` tool, with that being renamed to something lower-level which it could call on to, so that invoking `swift build` would run this tool. If no Configuration target was present in the manifest, we could fall back to the previous `swift build` behaviour.
+
+This prototype makes no changes to the `Package.swift` format. Because of this, the configuration and tool targets are just listed in the manifest along with the targets from the package that we're building.
+
+This is potentially confusing, so an improvement to the design might be to change the DSL slightly to allow the special targets to be listed explicitly, like so:
+
+```swift
+
+let package = Package(
+    name: "Example",
+    products: [
+        // Products define the executables and libraries produced by a package, and make them visible to other packages.
+        .executable(
+            name: "Example",
+            targets: ["Example"]),
+    ],
+    dependencies: [
+        // Dependencies declare other packages that this package depends on.
+        // .package(url: /* package url */, from: "1.0.0"),
+    ],
+    configuration:[
+      .configurationTarget(
+        name: "Configure",
+        dependencies: []),
+      .toolTarget(
+        name: "Tool",
+        dependencies: [])
+    ],
+    targets: [
+        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
+        // Targets can depend on other targets in this package, and on products in packages which this package depends on.
+        .target(
+            name: "Example",
+            dependencies: []),
+        .testTarget(
+            name: "ExampleTests",
+            dependencies: ["Example"]),
+    ]
+)
+```
+
+I suspect that this would be preferable, but I wanted to start with something that didn't require modifying spm itself.
