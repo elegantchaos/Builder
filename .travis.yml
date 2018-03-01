@@ -2,12 +2,13 @@ os: osx
 osx_image: xcode9.2
 language: swift
 install:
-  - swift package update
+- swift package update
 script:
-  - cd Example/
-  - swift run --package-path ../. --static-swift-stdlib -Xswiftc "-target" -Xswiftc "x86_64-apple-macosx10.12"
-  - .build/debug/Example
-
+- cd Example/
+- swift run --package-path ../. --static-swift-stdlib -Xswiftc "-target" -Xswiftc
+  "x86_64-apple-macosx10.12"
+- ".build/debug/Example"
 notifications:
   slack:
-    secure: "pnbTg4FxdOpaqgqfKeyjcQaa0maSCW41EEGuyldRndvhUF+mtwm5mi4mC7a1ojkeVPZq7IFRnvz5g/S4eG0Yqh3CAOD/tMBLvdp9U7IvWL0DnvUpmVz0qdKguNis6I1ZindSmSRq6bW2UOW5fRMgRcYMKs9FW+u0YiUp11Tl1Vh4v8sbuFQVnJw8NBQMNaFtBLM7geUjOxSyhITGOLtVnlSSrJLaHxU98o5kLtnLy4jfdXix1pVzqDEXXVhT9eVnF8waZ9lbtCl8SuhtgkMMgN3PXe/55aBtbNF3veepwLI0JjnklbbMTuoR3FDhqMftp5GS2ON8VeKbihYVbQgHSXYgLObPHj58WZG2Pgp1bMzHctFACSukGsgy9Mz5feWoukQtCcnyUfQpN1zRXdn3t9R+g1SQMgLgC0HLm0xvYiAbUVbGklqqLEQh4KB6Ee5I0OIQ1KxHuwHc/mEk9DDjaPFWzni9WNw6UZfH4uKaDlr6LRsKU8HyCymP6dKpePoOkjFzIye12BlMcBlEQRcyp6h5cEIVi4W1rWzeqgwpz9ufISbSod7MgisRr9bJAR7a4SRxG7GE0AdywmjBTxoscBYl6ZUqBM+1koztF7/djEbiCMtnvxGOQVWXO9gq8HjL9H1TjHQWmUk1hzeVgPEvXTa/fwfs09hhw2ba2o5DebM="
+    rooms:
+      secure: RihfNwu4RpSXxgfXmkAwvodIzwz2mm+bz/pkg2prwmNxSQoFI1PD/fjsNZZOyIlvCVMt/5en2aCEgZC9Ix41zIq85qneQVpkZdAazkiS44U6g2Enq9AYPpj2t4O404lv3x562aOt0Z4NJvGMYKBkHXTKwYl4gFjII7Ww2Ss9HhenCkAogpJEg8kma+dK3O8ilfthULDpLjisjHvxfY1mv1tHVpwRQu5mntrdGLDpA+wiXRkwv6aScYrOA3FSXM6BYgXxy2z9Te7nVdtnWQ3lhe6oODTyblDD0ri93vzaEkKa3DOaRCeuChQjmhU24x7GcPCP2YYfL4IYiOTwIExKnu5g79jOa/vnhnCJ0R1RKRYryiUhiDMpLsLT5Pdp0bmNKPXEAGXtfJvnu41Hrl3RJDIjIPHTuXXPUdJ4xe9B45aWOk2vIjGnLmS09EXRkvhDMopVaBQqBXlTTPnEMXEccHte30xCLueVhIfQdMSG8UW8LJvePYtv6ztH47HGOYkHovfUQnLYYHNo0Bzdpf868Ih5dGCoBAApF+HqQsmQ3vOIMudzRf5wOccTjlxRwU9+aD+tiWkAIo8pjax9M9xlpiedqwG8p1GXb+vji7uWUIgzN9HmLfY42fyU5wzj8NG10/ta7b2uQVl49lPiKYRZaV+HD7cQgVshWUOIYseIU14=
