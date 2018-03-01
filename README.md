@@ -15,7 +15,6 @@ To build & test the builder:
 
 ```
 swift package update
-swift package clean
 cd Example
 swift run --package-path ../. --static-swift-stdlib -Xswiftc "-target" -Xswiftc "x86_64-apple-macosx10.12"
 .build/debug/Example
@@ -103,7 +102,7 @@ In this way, it should be possible for this system to operate with the absolute 
 
 ## Caveats
 
-I hacked this together as a demo. It builds on MacOS and Linux, for me - your mileage may vary.
+I hacked this together as a demo. It builds for me on MacOS and Linux - your mileage may vary.
 
 Lots of things have been glossed over, including:
 
@@ -128,9 +127,9 @@ In theory though it would be integrated into `swift` itself. It could possibly e
 
 ### Package.swift
 
-This prototype makes no changes to the `Package.swift` format. Because of this, the configuration and tool targets are just listed in the manifest along with the targets from the package that we're building.
+This prototype is an overlay on `spm`, so makes no changes to the `Package.swift` format. Because of this, the configuration and tool targets are just listed in the manifest along with the targets from the package that we're building.
 
-This is potentially confusing, so an improvement to the design might be to change the DSL slightly to allow the special targets to be listed explicitly, like so:
+This is potentially confusing, a properly integrated implementation might change the DSL slightly to allow the special targets to be listed explicitly, like so:
 
 ```swift
 
@@ -183,7 +182,7 @@ There's no reason why the product build commands couldn't be interleaved with ot
 
 ```
 let configuration : [String:Any] = [
-    "settings" : settings,
+    "settings" : ["key" : "value"],
     "phases" : [
       "run tool1",
       "build product1",
