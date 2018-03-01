@@ -8,20 +8,19 @@ An example package is provided, which you can run the tool on.
 
 The prototype is a standalone tool but obviously a real implementation could be integrated into spm itself.
 
-### Building 
+### Building
 
 To build & test the builder:
 
 ```
 swift package update
 swift package clean
-swift build -Xswiftc "-target" -Xswiftc "x86_64-apple-macosx10.12"
 cd Example
-../.build/debug/Builder
+swift run --package-path ../. --static-swift-stdlib -Xswiftc "-target" -Xswiftc "x86_64-apple-macosx10.12"
 .build/debug/Example
 ```
 
-What this does is to build the Builder tool itself, then run it to build the Example package.
+What this does is to build and run the Builder tool itself, which then builds the Example package.
 
 When running over the example package, the tool:
 

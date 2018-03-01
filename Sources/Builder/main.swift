@@ -169,9 +169,6 @@ class Builder {
 
 }
 
-logger.enabled = true
-verbose.enabled = true
-
 do {
     let builder = Builder()
     try builder.build()
