@@ -119,9 +119,14 @@ Lots of things have been glossed over, including:
 
 ## Other Ideas
 
+### Integration
+
 As mentioned above, this is a prototype, so it's a standalone tool.
 
 In theory though it would be integrated into `swift` itself. It could possibly even replace the existing `build` tool, with that being renamed to something lower-level which it could call on to, so that invoking `swift build` would run this tool. If no Configuration target was present in the manifest, we could fall back to the previous `swift build` behaviour.
+
+
+### Package.swift
 
 This prototype makes no changes to the `Package.swift` format. Because of this, the configuration and tool targets are just listed in the manifest along with the targets from the package that we're building.
 
@@ -163,3 +168,32 @@ let package = Package(
 ```
 
 I suspect that this would be preferable, but I wanted to start with something that didn't require modifying spm itself.
+
+### Custom Build Phases
+
+For simplicity, I went for a fixed order:
+
+- run pre-build tools
+- build products
+- run post-build tools
+
+This is perhaps a little inflexible.
+
+There's no reason why the product build commands couldn't be interleaved with other tool executions, so the whole configuration just becomes some settings and a list of phases to execute:
+
+```
+let configuration : [String:Any] = [
+    "settings" : settings,
+    "phases" : [
+      "run tool1",
+      "build product1",
+      "run tool2",
+      "build product2",
+      "run tool3"
+      ],
+]
+```
+
+Some special commands could be implemented by builder itself (eg "build" might trigger a build via `sketch build`).
+
+Any other commands would be expected to correspond to tool target names, and would be built & run.
