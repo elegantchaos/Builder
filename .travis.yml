@@ -1,12 +1,10 @@
 os: osx
 osx_image: xcode9.2
 language: swift
-install:
-- swift package update
+install: swift package update
 script:
 - cd Example/
-- swift run --package-path ../. --static-swift-stdlib -Xswiftc "-target" -Xswiftc
-  "x86_64-apple-macosx10.12"
+- swift run --package-path ../. --static-swift-stdlib -Xswiftc "-target" -Xswiftc "x86_64-apple-macosx10.12"
 - ".build/debug/Example"
 notifications:
   slack:
