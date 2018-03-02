@@ -23,14 +23,21 @@ import os
  */
 
 class Builder {
-
+    var environment : [String:String] = ProcessInfo.processInfo.environment
+    
+    init() {
+        // TODO: flesh this out
+        self.environment["BUILDER_COMMAND"] = "build"
+        self.environment["BUILDER_CONFIGURATION"] = "debug" // TODO: read from the command line
+    }
+    
     /**
      Invoke a command and some optional arguments.
      On success, returns the captured output from stdout.
      On failure, throws an error.
      */
 
-    func run(_ command : String, arguments: [String] = [], environment : [String:String]? = nil) throws -> String {
+    func run(_ command : String, arguments: [String] = []) throws -> String {
         let pipe = Pipe()
         let handle = pipe.fileHandleForReading
         let errPipe = Pipe()
@@ -41,7 +48,7 @@ class Builder {
         process.arguments = arguments
         process.standardOutput = pipe
         process.standardError = errPipe
-        process.environment = environment
+        process.environment = self.environment
         process.launch()
         let data = handle.readDataToEndOfFile()
         let errData = errHandle.readDataToEndOfFile()
@@ -68,7 +75,7 @@ class Builder {
      On failure, throws an error.
      */
 
-    func swift(_ command : String, arguments: [String] = [], environment : [String:String]? = nil) throws -> String {
+    func swift(_ command : String, arguments: [String] = []) throws -> String {
 
         #if os(macOS)
         let swift = "/usr/bin/swift" // should be discovered from the environment
@@ -77,7 +84,7 @@ class Builder {
         #endif
 
         verbose.log("running swift \(command)")
-        return try run(swift, arguments: [command] + arguments, environment: environment)
+        return try run(swift, arguments: [command] + arguments)
     }
 
     /**
@@ -94,38 +101,22 @@ class Builder {
 
         return decoded
     }
-
-    /**
-     Return the environment to pass to any tools we launch.
-     */
-    func environment() -> [String:String] {
-        // inherit our environment
-        var env = ProcessInfo.processInfo.environment
-
-        // TODO: flesh this out
-        env["BUILDER_COMMAND"] = "build"
-        env["BUILDER_CONFIGURATION"] = "debug" // TODO: read from the command line
-
-        return env
-    }
     
     /**
      Perform the build.
      */
 
     func build(configurationTarget : String) throws {
-        var environment = self.environment()
-        
         // try to build the Configure target
         output.log("Configuring.")
         environment["BUILDER_STAGE"] = "configure"
-        let _ = try swift("build", arguments: ["--product", configurationTarget], environment: environment)
+        let _ = try swift("build", arguments: ["--product", configurationTarget])
 
         // if we built it, run it, and parse its output as a JSON configuration
         // (we don't use `swift run` here as we don't want to capture any of its output)
         let binPath = try swift("build", arguments: ["--product", configurationTarget, "--show-bin-path"])
         let configurePath = URL(fileURLWithPath:binPath.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)).appendingPathComponent(configurationTarget).path
-        let json = try run(configurePath, environment: environment)
+        let json = try run(configurePath)
         let configuration = try parse(configuration: json)
 
         environment["BUILDER_PRODUCTS"] = configuration.products.joined(separator: ",")
@@ -134,7 +125,7 @@ class Builder {
         output.log("\nPrebuild:")
         environment["BUILDER_STAGE"] = "prebuild"
         for tool in configuration.prebuild {
-            let toolOutput = try swift("run", arguments: [tool], environment: environment)
+            let toolOutput = try swift("run", arguments: [tool])
             output.log("- run \(tool): \(toolOutput)")
         }
 
@@ -144,14 +135,14 @@ class Builder {
         let settings = configuration.compilerSettings()
         for product in configuration.products {
             output.log("- building \(product).")
-            let _ = try swift("build", arguments: ["--product", product] + settings, environment: environment)
+            let _ = try swift("build", arguments: ["--product", product] + settings)
         }
 
         // run any postbuild tools
         output.log("\nPostbuild:")
         environment["BUILDER_STAGE"] = "postbuild"
         for tool in configuration.postbuild {
-            let toolOutput = try swift("run", arguments: [tool], environment: environment)
+            let toolOutput = try swift("run", arguments: [tool])
             output.log("- run \(tool): \(toolOutput)")
         }
 
