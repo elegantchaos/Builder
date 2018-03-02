@@ -7,21 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		OBJ_34 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* main.swift */; };
-		OBJ_36 /* Logger.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "Logger::Logger::Product" /* Logger.framework */; };
-		OBJ_44 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
-		OBJ_49 /* Context.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_17 /* Context.swift */; };
-		OBJ_50 /* Handler.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_18 /* Handler.swift */; };
-		OBJ_51 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_19 /* Logger.swift */; };
-		OBJ_52 /* Manager.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_20 /* Manager.swift */; };
-		OBJ_53 /* NSLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_21 /* NSLogHandler.swift */; };
-		OBJ_54 /* OSLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_22 /* OSLogHandler.swift */; };
-		OBJ_55 /* PrintHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_23 /* PrintHandler.swift */; };
-		OBJ_62 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_25 /* Package.swift */; };
+		2203A8482049BEB1000417A7 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2203A8472049BEB1000417A7 /* Configuration.swift */; };
+		2203A84A2049BEE5000417A7 /* Failure.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2203A8492049BEE5000417A7 /* Failure.swift */; };
+		OBJ_35 /* Builder.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* Builder.swift */; };
+		OBJ_36 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* main.swift */; };
+		OBJ_38 /* Logger.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "Logger::Logger::Product" /* Logger.framework */; };
+		OBJ_46 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
+		OBJ_51 /* Context.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_18 /* Context.swift */; };
+		OBJ_52 /* Handler.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_19 /* Handler.swift */; };
+		OBJ_53 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_20 /* Logger.swift */; };
+		OBJ_54 /* Manager.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_21 /* Manager.swift */; };
+		OBJ_55 /* NSLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_22 /* NSLogHandler.swift */; };
+		OBJ_56 /* OSLogHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_23 /* OSLogHandler.swift */; };
+		OBJ_57 /* PrintHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_24 /* PrintHandler.swift */; };
+		OBJ_64 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_26 /* Package.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		2203A84020487716000417A7 /* PBXContainerItemProxy */ = {
+		2203A8462049BE7E000417A7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
 			proxyType = 1;
@@ -31,32 +34,35 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2203A8472049BEB1000417A7 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
+		2203A8492049BEE5000417A7 /* Failure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Failure.swift; sourceTree = "<group>"; };
 		"Builder::Builder::Product" /* Builder */ = {isa = PBXFileReference; lastKnownFileType = text; path = Builder; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Logger::Logger::Product" /* Logger.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Logger.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		OBJ_11 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
-		OBJ_13 /* Example */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Example; sourceTree = SOURCE_ROOT; };
-		OBJ_17 /* Context.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Context.swift; sourceTree = "<group>"; };
-		OBJ_18 /* Handler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Handler.swift; sourceTree = "<group>"; };
-		OBJ_19 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
-		OBJ_20 /* Manager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manager.swift; sourceTree = "<group>"; };
-		OBJ_21 /* NSLogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSLogHandler.swift; sourceTree = "<group>"; };
-		OBJ_22 /* OSLogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSLogHandler.swift; sourceTree = "<group>"; };
-		OBJ_23 /* PrintHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintHandler.swift; sourceTree = "<group>"; };
-		OBJ_25 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; name = Package.swift; path = "/Volumes/caconym/Users/sam/Projects/Builder/.build/checkouts/Logger.git-5688927002058744994/Package.swift"; sourceTree = "<group>"; };
+		OBJ_11 /* Builder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Builder.swift; sourceTree = "<group>"; };
+		OBJ_12 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		OBJ_14 /* Example */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Example; sourceTree = SOURCE_ROOT; };
+		OBJ_18 /* Context.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Context.swift; sourceTree = "<group>"; };
+		OBJ_19 /* Handler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Handler.swift; sourceTree = "<group>"; };
+		OBJ_20 /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		OBJ_21 /* Manager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Manager.swift; sourceTree = "<group>"; };
+		OBJ_22 /* NSLogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSLogHandler.swift; sourceTree = "<group>"; };
+		OBJ_23 /* OSLogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSLogHandler.swift; sourceTree = "<group>"; };
+		OBJ_24 /* PrintHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintHandler.swift; sourceTree = "<group>"; };
+		OBJ_26 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; name = Package.swift; path = "/Volumes/caconym/Users/sam/Projects/Builder/.build/checkouts/Logger.git-7968172881489479458/Package.swift"; sourceTree = "<group>"; };
 		OBJ_6 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		OBJ_8 /* Builder.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Builder.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		OBJ_35 /* Frameworks */ = {
+		OBJ_37 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 0;
 			files = (
-				OBJ_36 /* Logger.framework in Frameworks */,
+				OBJ_38 /* Logger.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		OBJ_56 /* Frameworks */ = {
+		OBJ_58 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 0;
 			files = (
@@ -69,65 +75,68 @@
 		OBJ_10 /* Builder */ = {
 			isa = PBXGroup;
 			children = (
-				OBJ_11 /* main.swift */,
+				OBJ_11 /* Builder.swift */,
+				2203A8472049BEB1000417A7 /* Configuration.swift */,
+				2203A8492049BEE5000417A7 /* Failure.swift */,
+				OBJ_12 /* main.swift */,
 			);
 			name = Builder;
 			path = Sources/Builder;
 			sourceTree = SOURCE_ROOT;
 		};
-		OBJ_12 /* Tests */ = {
+		OBJ_13 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			name = Tests;
 			sourceTree = SOURCE_ROOT;
 		};
-		OBJ_14 /* Dependencies */ = {
+		OBJ_15 /* Dependencies */ = {
 			isa = PBXGroup;
 			children = (
-				OBJ_15 /* Logger 1.0.4 */,
+				OBJ_16 /* Logger 1.0.5 */,
 			);
 			name = Dependencies;
 			sourceTree = "<group>";
 		};
-		OBJ_15 /* Logger 1.0.4 */ = {
+		OBJ_16 /* Logger 1.0.5 */ = {
 			isa = PBXGroup;
 			children = (
-				OBJ_16 /* Logger */,
-				OBJ_24 /* Example */,
-				OBJ_25 /* Package.swift */,
+				OBJ_17 /* Logger */,
+				OBJ_25 /* Example */,
+				OBJ_26 /* Package.swift */,
 			);
-			name = "Logger 1.0.4";
+			name = "Logger 1.0.5";
 			sourceTree = SOURCE_ROOT;
 		};
-		OBJ_16 /* Logger */ = {
+		OBJ_17 /* Logger */ = {
 			isa = PBXGroup;
 			children = (
-				OBJ_17 /* Context.swift */,
-				OBJ_18 /* Handler.swift */,
-				OBJ_19 /* Logger.swift */,
-				OBJ_20 /* Manager.swift */,
-				OBJ_21 /* NSLogHandler.swift */,
-				OBJ_22 /* OSLogHandler.swift */,
-				OBJ_23 /* PrintHandler.swift */,
+				OBJ_18 /* Context.swift */,
+				OBJ_19 /* Handler.swift */,
+				OBJ_20 /* Logger.swift */,
+				OBJ_21 /* Manager.swift */,
+				OBJ_22 /* NSLogHandler.swift */,
+				OBJ_23 /* OSLogHandler.swift */,
+				OBJ_24 /* PrintHandler.swift */,
 			);
 			name = Logger;
-			path = ".build/checkouts/Logger.git-5688927002058744994/Sources/Logger";
+			path = ".build/checkouts/Logger.git-7968172881489479458/Sources/Logger";
 			sourceTree = SOURCE_ROOT;
 		};
-		OBJ_24 /* Example */ = {
+		OBJ_25 /* Example */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			name = Example;
-			path = ".build/checkouts/Logger.git-5688927002058744994/Sources/Example";
+			path = ".build/checkouts/Logger.git-7968172881489479458/Sources/Example";
 			sourceTree = SOURCE_ROOT;
 		};
-		OBJ_26 /* Products */ = {
+		OBJ_27 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				"Logger::Logger::Product" /* Logger.framework */,
 				"Builder::Builder::Product" /* Builder */,
+				"Logger::Logger::Product" /* Logger.framework */,
 			);
 			name = Products;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -138,10 +147,10 @@
 				OBJ_6 /* Package.swift */,
 				OBJ_7 /* Configs */,
 				OBJ_9 /* Sources */,
-				OBJ_12 /* Tests */,
-				OBJ_13 /* Example */,
-				OBJ_14 /* Dependencies */,
-				OBJ_26 /* Products */,
+				OBJ_13 /* Tests */,
+				OBJ_14 /* Example */,
+				OBJ_15 /* Dependencies */,
+				OBJ_27 /* Products */,
 			);
 			name = "";
 			sourceTree = "<group>";
@@ -167,15 +176,15 @@
 /* Begin PBXNativeTarget section */
 		"Builder::Builder" /* Builder */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = OBJ_30 /* Build configuration list for PBXNativeTarget "Builder" */;
+			buildConfigurationList = OBJ_31 /* Build configuration list for PBXNativeTarget "Builder" */;
 			buildPhases = (
-				OBJ_33 /* Sources */,
-				OBJ_35 /* Frameworks */,
+				OBJ_34 /* Sources */,
+				OBJ_37 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				OBJ_37 /* PBXTargetDependency */,
+				OBJ_39 /* PBXTargetDependency */,
 			);
 			name = Builder;
 			productName = Builder;
@@ -184,9 +193,9 @@
 		};
 		"Builder::SwiftPMPackageDescription" /* BuilderPackageDescription */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = OBJ_40 /* Build configuration list for PBXNativeTarget "BuilderPackageDescription" */;
+			buildConfigurationList = OBJ_42 /* Build configuration list for PBXNativeTarget "BuilderPackageDescription" */;
 			buildPhases = (
-				OBJ_43 /* Sources */,
+				OBJ_45 /* Sources */,
 			);
 			buildRules = (
 			);
@@ -198,10 +207,10 @@
 		};
 		"Logger::Logger" /* Logger */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = OBJ_45 /* Build configuration list for PBXNativeTarget "Logger" */;
+			buildConfigurationList = OBJ_47 /* Build configuration list for PBXNativeTarget "Logger" */;
 			buildPhases = (
-				OBJ_48 /* Sources */,
-				OBJ_56 /* Frameworks */,
+				OBJ_50 /* Sources */,
+				OBJ_58 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -214,9 +223,9 @@
 		};
 		"Logger::SwiftPMPackageDescription" /* LoggerPackageDescription */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = OBJ_58 /* Build configuration list for PBXNativeTarget "LoggerPackageDescription" */;
+			buildConfigurationList = OBJ_60 /* Build configuration list for PBXNativeTarget "LoggerPackageDescription" */;
 			buildPhases = (
-				OBJ_61 /* Sources */,
+				OBJ_63 /* Sources */,
 			);
 			buildRules = (
 			);
@@ -242,7 +251,7 @@
 				en,
 			);
 			mainGroup = OBJ_5 /*  */;
-			productRefGroup = OBJ_26 /* Products */;
+			productRefGroup = OBJ_27 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -255,51 +264,54 @@
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		OBJ_33 /* Sources */ = {
+		OBJ_34 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
-				OBJ_34 /* main.swift in Sources */,
+				2203A84A2049BEE5000417A7 /* Failure.swift in Sources */,
+				2203A8482049BEB1000417A7 /* Configuration.swift in Sources */,
+				OBJ_35 /* Builder.swift in Sources */,
+				OBJ_36 /* main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		OBJ_43 /* Sources */ = {
+		OBJ_45 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
-				OBJ_44 /* Package.swift in Sources */,
+				OBJ_46 /* Package.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		OBJ_48 /* Sources */ = {
+		OBJ_50 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
-				OBJ_49 /* Context.swift in Sources */,
-				OBJ_50 /* Handler.swift in Sources */,
-				OBJ_51 /* Logger.swift in Sources */,
-				OBJ_52 /* Manager.swift in Sources */,
-				OBJ_53 /* NSLogHandler.swift in Sources */,
-				OBJ_54 /* OSLogHandler.swift in Sources */,
-				OBJ_55 /* PrintHandler.swift in Sources */,
+				OBJ_51 /* Context.swift in Sources */,
+				OBJ_52 /* Handler.swift in Sources */,
+				OBJ_53 /* Logger.swift in Sources */,
+				OBJ_54 /* Manager.swift in Sources */,
+				OBJ_55 /* NSLogHandler.swift in Sources */,
+				OBJ_56 /* OSLogHandler.swift in Sources */,
+				OBJ_57 /* PrintHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		OBJ_61 /* Sources */ = {
+		OBJ_63 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
-				OBJ_62 /* Package.swift in Sources */,
+				OBJ_64 /* Package.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		OBJ_37 /* PBXTargetDependency */ = {
+		OBJ_39 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "Logger::Logger" /* Logger */;
-			targetProxy = 2203A84020487716000417A7 /* PBXContainerItemProxy */;
+			targetProxy = 2203A8462049BE7E000417A7 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -326,7 +338,7 @@
 			};
 			name = Debug;
 		};
-		OBJ_31 /* Debug */ = {
+		OBJ_32 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = OBJ_8 /* Builder.xcconfig */;
 			buildSettings = {
@@ -346,7 +358,7 @@
 			};
 			name = Debug;
 		};
-		OBJ_32 /* Release */ = {
+		OBJ_33 /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = OBJ_8 /* Builder.xcconfig */;
 			buildSettings = {
@@ -386,7 +398,7 @@
 			};
 			name = Release;
 		};
-		OBJ_41 /* Debug */ = {
+		OBJ_43 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				LD = /usr/bin/true;
@@ -395,7 +407,7 @@
 			};
 			name = Debug;
 		};
-		OBJ_42 /* Release */ = {
+		OBJ_44 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				LD = /usr/bin/true;
@@ -404,7 +416,7 @@
 			};
 			name = Release;
 		};
-		OBJ_46 /* Debug */ = {
+		OBJ_48 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = OBJ_8 /* Builder.xcconfig */;
 			buildSettings = {
@@ -427,7 +439,7 @@
 			};
 			name = Debug;
 		};
-		OBJ_47 /* Release */ = {
+		OBJ_49 /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = OBJ_8 /* Builder.xcconfig */;
 			buildSettings = {
@@ -450,7 +462,7 @@
 			};
 			name = Release;
 		};
-		OBJ_59 /* Debug */ = {
+		OBJ_61 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				LD = /usr/bin/true;
@@ -459,7 +471,7 @@
 			};
 			name = Debug;
 		};
-		OBJ_60 /* Release */ = {
+		OBJ_62 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				LD = /usr/bin/true;
@@ -480,38 +492,38 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		OBJ_30 /* Build configuration list for PBXNativeTarget "Builder" */ = {
+		OBJ_31 /* Build configuration list for PBXNativeTarget "Builder" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				OBJ_31 /* Debug */,
-				OBJ_32 /* Release */,
+				OBJ_32 /* Debug */,
+				OBJ_33 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		OBJ_40 /* Build configuration list for PBXNativeTarget "BuilderPackageDescription" */ = {
+		OBJ_42 /* Build configuration list for PBXNativeTarget "BuilderPackageDescription" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				OBJ_41 /* Debug */,
-				OBJ_42 /* Release */,
+				OBJ_43 /* Debug */,
+				OBJ_44 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		OBJ_45 /* Build configuration list for PBXNativeTarget "Logger" */ = {
+		OBJ_47 /* Build configuration list for PBXNativeTarget "Logger" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				OBJ_46 /* Debug */,
-				OBJ_47 /* Release */,
+				OBJ_48 /* Debug */,
+				OBJ_49 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		OBJ_58 /* Build configuration list for PBXNativeTarget "LoggerPackageDescription" */ = {
+		OBJ_60 /* Build configuration list for PBXNativeTarget "LoggerPackageDescription" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				OBJ_59 /* Debug */,
-				OBJ_60 /* Release */,
+				OBJ_61 /* Debug */,
+				OBJ_62 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
