@@ -62,7 +62,7 @@ Of course, if you *do* have special requirements, such as tools that need to be 
 
 ## Dynamic Configuration
 
-In this demo, the Configuration target from the example project looks like this:
+In this demo, the `Configure` target from the example project looks like this:
 
 ```swift
 import Foundation
@@ -86,9 +86,15 @@ if let json = String(data: encoded, encoding: String.Encoding.utf8) {
 }
 ```
 
-It actually embeds the configuration as a dictionary inside itself, and returns it as JSON when run.
+As a relatively simple example, it actually embeds the configuration as a dictionary inside itself, and returns it as JSON when run.
 
-This hopefully illustrates the fact that the configuration can be generated dynamically (by running code) and therefore could change based on the environment it's run in.
+This dictionary supplies some build settings, and states that the `BuilderToolExample` tool should be run before and after building the `Example` product.
+
+This `BuilderToolExample` tool is itself an external dependency (defined in a different git repo, and listed as a dependency in the manifest for the `Example` package).
+
+This code hopefully illustrates the fact that we can fetch, compile and run arbitrary tools as part of the overall build process.
+
+It also demonstrates that the configuration can be generated dynamically (by running code) and therefore could change based on the environment it's run in.
 
 In this case it just returns a *static* dictionary, albeit one who's contents are varied at compile time depending on the platform. In theory though the content could also be varied based on runtime values, fetched from the network, loaded from disk, etc.
 
