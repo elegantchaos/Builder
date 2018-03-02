@@ -1,17 +1,23 @@
 # Builder
 
-This is a very simple proof-of-concept implementation of a meta-build command for the Swift Package Manager, as described [in the Swift forums](https://forums.swift.org/t/spm-static-dependencies/10152/35?u=samdeane).
+The Swift Package Manager is cool, but rather basic.
 
-The executable tool built by this package is intended to be used _to build other Swift Package Manager packages_.
+It currently doesn't support running scripts or other tools as part of the build, or have a way to specify configuration settings.
 
-An example package is provided, which you can run the tool on.
+This is a very simple proof-of-concept implementation of a meta-build command for the Swift Package Manager, which illustrates one way that these features could be added. It was originally inspired by [a discussion in the Swift forums](https://forums.swift.org/t/spm-static-dependencies/10152/35?u=samdeane).
+
+The Builder executable built by this package is intended to be used _to build other Swift Package Manager packages_.
+
+An example package is provided (in the `Example/` folder), which you can run Builder on.
 
 The prototype is a standalone tool but obviously a real implementation could be integrated into spm itself.
 
+Please leave comments and suggestions on the Swift forums, or as [issues in github](https://github.com/elegantchaos/Builder/issues).
 
-### Building
 
-To build & test the builder:
+### Instructions
+
+To build & test Builder:
 
 ```
 swift package update
@@ -24,39 +30,39 @@ What this does is to build and run the Builder tool itself, which then builds th
 
 Finally, the script runs the built example product.
 
-Please leave comments and suggestions on the Swift forums, or as issues in github.
 
 ## Discussion
 
-The tool works by looking for a special "Configuration" target in the normal `Package.swift` file.
+Builder works by looking for a special target called `Configure` in the package that it's trying to build (defined in the `Package.swift` file).
 
-If it finds this target, it uses `swift build` and/or `swift run` to:
+If it finds this target, it uses `swift build` and/or `swift run` to do the following:
 
-- build & run the Configuration target from the package manifest
-- parse the output of this to obtain the build configuration to use
-- build & run any pre-build tools listed in the configuration
+- build the Configure target
+- run the resulting executable and capture its output
+- parse this output to obtain a configuration to use to build the actual package
+- build & run any pre-build tools specified by the configuration
 - build the products listed in the configuration, applying any build settings from the configuration
 - build & run any post-build tools listed in the configuration
 
 The idea behind this approach is that:
 
-- by moving the code for calculating the configuration into its own module, it should be possible to eliminate any non-deterministic swift from the manifest
-- any modules required to determine the configuration can be listed in the manifest as dependencies of the Configuration target, in the normal way
+- by moving the code for calculating the configuration into its own swift executable, it should be possible to eliminate any non-deterministic swift from the manifest
+- any dependencies required to determine the configuration can be listed in the manifest as dependencies of the Configure target, and will be fetched and built in the normal way
 - any tools required for custom build steps can also be listed in the manifest as dependencies
 
-In this way, once you have spm on your platform (and assuming that this functionality was built into spm), you don't need to install anything else (with `brew`, `apt-get` etc).
+If this functionality was built into `swift`, then for many cases it would be sufficient to completely define not only the package but how to build it.
 
-The entire chain of build dependencies, including additional tools (such as `mogenerator`, `protobuf`, etc), can be fetched and built locally by spm itself.
+The entire chain of build dependencies, including additional tools (such as `mogenerator`, `protobuf`, etc), can be fetched and built locally by the package manager itself.
 
-This is intended to encourage, as much as possible, people to stay platform-neutral within the Swift ecosystem. It also makes it simple for people to share re-usable build tools, since they're just Swift packages - hopefully this would result in a range of tools to suit most needs, so the requirement to actually write bespoke code would be minimal.
+This is intended to encourage, as much as possible, people to stay platform-neutral within the Swift ecosystem.
 
-Of course, if you *do* have special requirements, such as tools that need to be installed or run with another package manager, it's no problem. Since you can also build and run arbitrary modules as part of the build process, and since they are just normal swift code, you can do anything that you need to by just writing one or more Swift scripts.
+It also makes it simple for people to share re-usable build tools, since they're just Swift packages - hopefully this would result in a range of tools to suit most needs, so the requirement to actually write bespoke code would be minimal.
+
+Of course, if you *do* have special requirements, such as tools that need to be installed or run with `brew`/`apt-get`/`npm`/`whatever`, then that's no problem either. Since you can now build and run arbitrary executables as part of the build process, you can use one to do anything that you need to.
 
 ## Dynamic Configuration
 
-In this demo, the Configuration target from the example project is bespoke code. It actually embeds the configuration as a dictionary inside itself, and returns it as JSON when run.
-
-This is the complete source for it:
+In this demo, the Configuration target from the example project looks like this:
 
 ```swift
 import Foundation
@@ -80,17 +86,17 @@ if let json = String(data: encoded, encoding: String.Encoding.utf8) {
 }
 ```
 
-This illustrates the fact that the configuration is actually being generated dynamically (by running code) and therefore could change based on the environment it's run in.
+It actually embeds the configuration as a dictionary inside itself, and returns it as JSON when run.
 
-In this case it just returns a *static* dictionary, albeit one who's contents are varied at compile time depending on the platform. In theory though the content could also be varied based on runtime values.
+This hopefully illustrates the fact that the configuration can be generated dynamically (by running code) and therefore could change based on the environment it's run in.
 
-This might lead you to think that bespoke configuration would be required every time.
+In this case it just returns a *static* dictionary, albeit one who's contents are varied at compile time depending on the platform. In theory though the content could also be varied based on runtime values, fetched from the network, loaded from disk, etc.
 
-However, there's no reason in principle why this Configuration target itself could not be derived from behaviour provided by another dependency, and thus completely re-usable.
+Having to write bespoke configuration code every time might be a little messy (althogh `Package.swift` itself is a precedent). However, since the `Configure` target itself is just a Swift executable, it can rely on behaviour provided by another package.
 
-For example, one strategy could just be to look for a file called `Configuration.json` in the working directory and return the contents of that. Someone could implement a configuration module `JSONConfiguration` which does that.
+Someone could implement a configuration package (let's call it `JSONConfiguration`) which simply works by looking for a file called `Configuration.json` in the working directory and return the contents of that.
 
-Then the entire `Configuration.swift` file of our module might just consist of:
+To use that in _our_ package, the entire `main.swift` file of our `Configure` target can then just consist of:
 
 ```swift
 import JSONConfiguration
@@ -106,7 +112,7 @@ I hacked this together as a demo. It builds for me on MacOS and Linux - your mil
 
 Lots of things have been glossed over, including:
 
-- passing in useful environment to the helper executables (Configure and Tool)
+- passing in useful environment to the helper tools (Configure and Tool)
 - niceties such as error checking, help, etc, etc...
 - running different tools, or using different configurations, for each product
 - generating a fully-functional xcode project with
