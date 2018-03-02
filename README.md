@@ -62,16 +62,16 @@ This is the complete source for it:
 import Foundation
 
 #if os(macOS)
-let settings = ["target" : "x86_64-apple-macosx10.12"]
+  let settings = ["target" : "x86_64-apple-macosx10.12"]
 #else
-let settings : [String:String] = [:]
+  let settings : [String:String] = [:]
 #endif
 
 let configuration : [String:Any] = [
     "settings" : settings,
-    "prebuild" : ["Tool"],
-    "postbuild" : ["Tool"],
-    "products" : ["Example"]
+    "prebuild" : ["BuilderToolExample"],
+    "products" : ["Example"],
+    "postbuild" : ["BuilderToolExample"]
 ]
 
 let encoded = try JSONSerialization.data(withJSONObject: configuration, options: .prettyPrinted)
@@ -107,7 +107,6 @@ I hacked this together as a demo. It builds for me on MacOS and Linux - your mil
 Lots of things have been glossed over, including:
 
 - passing in useful environment to the helper executables (Configure and Tool)
-- building/running the tool executables from sub-dependencies -- in principle this should be fine I think, I just wanted to keep the demo self-contained
 - niceties such as error checking, help, etc, etc...
 - running different tools, or using different configurations, for each product
 - generating a fully-functional xcode project with
@@ -120,10 +119,9 @@ Lots of things have been glossed over, including:
 
 ### Integration
 
-As mentioned above, this is a prototype, so it's a standalone tool.
+As mentioned above, this is a prototype, so for ease of development I made it a standalone tool rather than trying to modify `spm` itself.
 
-In theory though it would be integrated into `swift` itself. It could possibly even replace the existing `build` tool, with that being renamed to something lower-level which it could call on to, so that invoking `swift build` would run this tool. If no Configuration target was present in the manifest, we could fall back to the previous `swift build` behaviour.
-
+In theory though it would be integrated into the `swift` command. It could possibly even replace the existing `swift-build` tool (with that being renamed to something else so that this tool could use it). Invoking `swift build` would then run this tool (if no Configuration target was present in the manifest, we could fall back to the previous `swift build` behaviour).
 
 ### Package.swift
 
@@ -143,14 +141,14 @@ let package = Package(
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
+        .package(url: "https://github.com/elegantchaos/BuilderToolExample.git", from: "1.0.3"),
     ],
     configuration:[
       .configurationTarget(
         name: "Configure",
-        dependencies: []),
+        dependencies: ["BuilderToolExample"]),
       .toolTarget(
-        name: "Tool",
+        name: "BuilderToolExample",
         dependencies: [])
     ],
     targets: [

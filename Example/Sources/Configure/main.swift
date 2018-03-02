@@ -7,9 +7,9 @@
 import Foundation
 
 #if os(macOS)
-let settings = ["target" : "x86_64-apple-macosx10.12"]
+  let settings = ["target" : "x86_64-apple-macosx10.12"]
 #else
-let settings : [String:String] = [:]
+  let settings : [String:String] = [:]
 #endif
 
 let configuration : [String:Any] = [
