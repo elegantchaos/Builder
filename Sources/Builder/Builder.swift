@@ -103,13 +103,20 @@ class Builder {
     }
     
     /**
+     Announce the build stage.
+    */
+    internal func setStage(_ stage : String) {
+        output.log("\n\(stage):")
+        environment["BUILDER_STAGE"] = stage.lowercased()
+    }
+    
+    /**
      Perform the build.
      */
 
     func build(configurationTarget : String) throws {
         // try to build the Configure target
-        output.log("Configuring.")
-        environment["BUILDER_STAGE"] = "configure"
+        setStage("Configure")
         let _ = try swift("build", arguments: ["--product", configurationTarget])
 
         // if we built it, run it, and parse its output as a JSON configuration
@@ -119,31 +126,30 @@ class Builder {
         let json = try run(configurePath)
         let configuration = try parse(configuration: json)
 
-        environment["BUILDER_PRODUCTS"] = configuration.products.joined(separator: ",")
+        let productList = configuration.products.joined(separator: ",")
+        output.log("- products to build: \(productList)")
+        environment["BUILDER_PRODUCTS"] = productList
 
         // run any prebuild tools
-        output.log("\nPrebuild:")
-        environment["BUILDER_STAGE"] = "prebuild"
+        setStage("Prebuild")
         for tool in configuration.prebuild {
             let toolOutput = try swift("run", arguments: [tool])
-            output.log("- run \(tool): \(toolOutput)")
+            output.log("- ran \(tool): \(toolOutput)")
         }
 
         // process the configuration to do the actual build
-        output.log("\nBuild:")
-        environment["BUILDER_STAGE"] = "build"
+        setStage("Build")
         let settings = configuration.compilerSettings()
         for product in configuration.products {
-            output.log("- building \(product).")
             let _ = try swift("build", arguments: ["--product", product] + settings)
+            output.log("- built \(product).")
         }
 
         // run any postbuild tools
-        output.log("\nPostbuild:")
-        environment["BUILDER_STAGE"] = "postbuild"
+        setStage("Postbuild")
         for tool in configuration.postbuild {
             let toolOutput = try swift("run", arguments: [tool])
-            output.log("- run \(tool): \(toolOutput)")
+            output.log("- ran \(tool): \(toolOutput)")
         }
 
         output.log("\nDone.\n\n")
