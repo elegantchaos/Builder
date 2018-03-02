@@ -153,8 +153,8 @@ class Builder {
         // run any prebuild tools
         output.log("\nPrebuild:")
         for tool in configuration.prebuild {
-            output.log("- running \(tool)")
-            let _ = try swift("run", arguments: [tool, "prebuild"])
+            let toolOutput = try swift("run", arguments: [tool, "prebuild"])
+            output.log("- run \(tool): \(toolOutput)")
         }
 
         // process the configuration to do the actual build
@@ -168,8 +168,8 @@ class Builder {
         // run any postbuild tools
         output.log("\nPostbuild:")
         for tool in configuration.postbuild {
-            output.log("- running \(tool)")
-            let _ = try swift("run", arguments: [tool, "postbuild"])
+            let toolOutput = try swift("run", arguments: [tool, "postbuild"])
+            output.log("- run \(tool): \(toolOutput)")
         }
 
         output.log("\nDone.\n\n")

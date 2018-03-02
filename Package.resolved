@@ -3,7 +3,7 @@
     "pins": [
       {
         "package": "Logger",
-        "repositoryURL": "git@github.com:elegantchaos/Logger.git",
+        "repositoryURL": "https://github.com/elegantchaos/Logger.git",
         "state": {
           "branch": null,
           "revision": "2e3fd3cf52df380f251ac0345588e5cbd666fd46",
