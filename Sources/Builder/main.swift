@@ -8,7 +8,7 @@ import Foundation
 import Logger
 
 let output = Logger.stdout
-let verbose = Logger("com.elegantchaos.builder.verbose")
+let verbose = Logger("com.elegantchaos.builder.verbose", handlers:[PrintHandler()])
 
 /**
  Data structure returned by the Configuration target.
