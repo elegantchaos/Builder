@@ -14,9 +14,9 @@ let settings : [String:String] = [:]
 
 let configuration : [String:Any] = [
     "settings" : settings,
-    "prebuild" : ["Tool"],
-    "postbuild" : ["Tool"],
-    "products" : ["Example"]
+    "prebuild" : ["BuilderToolExample"],
+    "products" : ["Example"],
+    "postbuild" : ["BuilderToolExample"]
 ]
 
 let encoded = try JSONSerialization.data(withJSONObject: configuration, options: .prettyPrinted)

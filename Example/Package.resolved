@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "BuilderToolExample",
+        "repositoryURL": "https://github.com/elegantchaos/BuilderToolExample.git",
+        "state": {
+          "branch": null,
+          "revision": "2fa97be8571aa2ec601303fa9796a0b54ccd5d14",
+          "version": "1.0.3"
+        }
+      }
+    ]
+  },
+  "version": 1
+}
