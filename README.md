@@ -49,6 +49,7 @@ The idea behind this approach is that:
 - by moving the code for calculating the configuration into its own swift executable, it should be possible to eliminate any non-deterministic swift from the manifest
 - any dependencies required to determine the configuration can be listed in the manifest as dependencies of the Configure target, and will be fetched and built in the normal way
 - any tools required for custom build steps can also be listed in the manifest as dependencies
+- although the data format output by the configuration tool needs to be fixed, the actual implementation of it is decoupled from swift itself, making it easier to support multiple different systems
 
 If this functionality was built into `swift`, then for many cases it would be sufficient to completely define not only the package but how to build it.
 
@@ -177,6 +178,13 @@ let package = Package(
 ```
 
 I suspect that this would be preferable, but I wanted to start with something that didn't require modifying spm itself.
+
+### Separate Package File
+
+Rather than living in the main `Package.swift` file, the configuration and tool information could live in its own file which lived alongside the main one.
+
+It could either have a standard name such as `Configure.swift` (which would require changes to spm), or it could live in a sub-folder, such as `Configure/Package.swift`.
+
 
 ### Custom Build Phases
 
