@@ -4,7 +4,7 @@
 // For licensing terms, see http://elegantchaos.com/license/liberal/.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-import Foundation
+import BuilderBasicConfigure
 
 #if os(macOS)
   let settings = ["target" : "x86_64-apple-macosx10.12"]
@@ -19,7 +19,5 @@ let configuration : [String:Any] = [
     "postbuild" : ["BuilderToolExample"]
 ]
 
-let encoded = try JSONSerialization.data(withJSONObject: configuration, options: .prettyPrinted)
-if let json = String(data: encoded, encoding: String.Encoding.utf8) {
-    print(json)
-}
+let configure = BasicConfigure(dictionary: configuration)
+try configure.run()
