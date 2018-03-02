@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Logger::Logger"
-               BuildableName = "Logger.framework"
-               BlueprintName = "Logger"
+               BlueprintIdentifier = "Builder::Builder"
+               BuildableName = "Builder"
+               BlueprintName = "Builder"
                ReferencedContainer = "container:Builder.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -28,9 +28,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Builder::Builder"
-               BuildableName = "Builder"
-               BlueprintName = "Builder"
+               BlueprintIdentifier = "Logger::Logger"
+               BuildableName = "Logger.framework"
+               BlueprintName = "Logger"
                ReferencedContainer = "container:Builder.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -59,9 +59,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "Logger::Logger"
-            BuildableName = "Logger.framework"
-            BlueprintName = "Logger"
+            BlueprintIdentifier = "Builder::Builder"
+            BuildableName = "Builder"
+            BlueprintName = "Builder"
             ReferencedContainer = "container:Builder.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
