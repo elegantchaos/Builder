@@ -4,26 +4,31 @@
 // For licensing terms, see http://elegantchaos.com/license/liberal/.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+struct Command : Decodable {
+  let tool : String
+  let arguments : [String]
+}
+
 /**
  Data structure returned by the Configuration target.
- 
+
  This structure describes the products to build, the
  settings to apply to them, and a list of executables
  to build and run before and after the build.
- 
+
  The executables should themselves be specified as dependencies
  of the Configuration target, and will be built as part of building
  the configuration.
- 
+
  In this way the entire toolchain is bootstrappable.
  */
 
 struct Configuration : Decodable {
     let settings : [String:String]
     let products : [String]
-    let prebuild : [String]
-    let postbuild : [String]
-    
+    let prebuild : [Command]
+    let postbuild : [Command]
+
     func compilerSettings() -> [String] {
         var args : [String] = []
         settings.forEach({ (key, value) in
@@ -31,6 +36,5 @@ struct Configuration : Decodable {
         })
         return args
     }
-    
-}
 
+}

@@ -12,7 +12,7 @@ let package = Package(
     ],
     dependencies: [
         // example tool we're going to use in the build
-        .package(url: "https://github.com/elegantchaos/BuilderToolExample.git", from: "1.0.4"),
+        .package(url: "https://github.com/elegantchaos/BuilderToolExample.git", from: "1.0.5"),
 
         // support library we're going to use in the configuration target
         .package(url: "https://github.com/elegantchaos/BuilderBasicConfigure.git", from: "1.0.3"),

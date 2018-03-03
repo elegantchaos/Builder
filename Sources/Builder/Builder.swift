@@ -132,8 +132,9 @@ class Builder {
 
         // run any prebuild tools
         setStage("Prebuild")
-        for tool in configuration.prebuild {
-            let toolOutput = try swift("run", arguments: [tool])
+        for command in configuration.prebuild {
+            let tool = command.tool
+            let toolOutput = try swift("run", arguments: [tool] + command.arguments)
             output.log("- ran \(tool): \(toolOutput)")
         }
 
@@ -147,8 +148,9 @@ class Builder {
 
         // run any postbuild tools
         setStage("Postbuild")
-        for tool in configuration.postbuild {
-            let toolOutput = try swift("run", arguments: [tool])
+        for command in configuration.postbuild {
+            let tool = command.tool
+            let toolOutput = try swift("run", arguments: [tool] + command.arguments)
             output.log("- ran \(tool): \(toolOutput)")
         }
 

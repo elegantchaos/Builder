@@ -14,9 +14,9 @@ import BuilderBasicConfigure
 
 let configuration : [String:Any] = [
     "settings" : settings,
-    "prebuild" : ["BuilderToolExample"],
+    "prebuild" : [["tool":"BuilderToolExample", "arguments":[""]]],
     "products" : ["Example"],
-    "postbuild" : ["BuilderToolExample"]
+    "postbuild" : [["tool":"BuilderToolExample", "arguments":["blah", "blah"]]]
 ]
 
 let configure = BasicConfigure(dictionary: configuration)
