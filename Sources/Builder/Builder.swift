@@ -125,33 +125,22 @@ class Builder {
         let configurePath = URL(fileURLWithPath:binPath.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)).appendingPathComponent(configurationTarget).path
         let json = try run(configurePath)
         let configuration = try parse(configuration: json)
-
-        let productList = configuration.products.joined(separator: ",")
-        output.log("- products to build: \(productList)")
-        environment["BUILDER_PRODUCTS"] = productList
+        
+        let settings = configuration.compilerSettings()
+        environment["BUILDER_SETTINGS"] = settings.joined(separator: ",")
 
         // run any prebuild tools
-        setStage("Prebuild")
-        for command in configuration.prebuild {
-            let tool = command.tool
-            let toolOutput = try swift("run", arguments: [tool] + command.arguments)
-            output.log("- ran \(tool): \(toolOutput)")
-        }
-
-        // process the configuration to do the actual build
-        setStage("Build")
-        let settings = configuration.compilerSettings()
-        for product in configuration.products {
-            let _ = try swift("build", arguments: ["--product", product] + settings)
-            output.log("- built \(product).")
-        }
-
-        // run any postbuild tools
-        setStage("Postbuild")
-        for command in configuration.postbuild {
-            let tool = command.tool
-            let toolOutput = try swift("run", arguments: [tool] + command.arguments)
-            output.log("- ran \(tool): \(toolOutput)")
+        for phase in configuration.phases {
+            setStage(phase.name)
+            let tool = phase.tool
+            if (tool == "build") {
+                let product = phase.arguments[0]
+                let _ = try swift("build", arguments: ["--product", product] + settings)
+                output.log("- built \(product).")
+            } else {
+                let toolOutput = try swift("run", arguments: [tool] + phase.arguments)
+                output.log("- ran \(tool): \(toolOutput)")
+            }
         }
 
         output.log("\nDone.\n\n")
