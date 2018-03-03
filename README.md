@@ -10,7 +10,9 @@ The Builder executable built by this package is intended to be used _to build ot
 
 An example package is provided (in the `Example/` folder), which you can run Builder on.
 
-The prototype is a standalone tool but obviously a real implementation could be integrated into spm itself.
+The approach taken was deliberately chosen to work with the _current_ abilities of spm, so that the prototype could be a standalone tool that sits _on top of_ spm and uses it.
+
+A real implementation could be integrated into spm itself, or could continue as a layer on top of it. The main advantage of integration is just that there's no extra tool to have to install.
 
 Please leave comments and suggestions on the Swift forums, or as [issues in github](https://github.com/elegantchaos/Builder/issues).
 
@@ -66,7 +68,7 @@ Of course, if you *do* have special requirements, such as tools that need to be 
 In this demo, the `Configure` target from the example project looks like this:
 
 ```swift
-import Foundation
+import BuilderBasicConfigure
 
 #if os(macOS)
   let settings = ["target" : "x86_64-apple-macosx10.12"]
@@ -81,36 +83,21 @@ let configuration : [String:Any] = [
     "postbuild" : ["BuilderToolExample"]
 ]
 
-let encoded = try JSONSerialization.data(withJSONObject: configuration, options: .prettyPrinted)
-if let json = String(data: encoded, encoding: String.Encoding.utf8) {
-    print(json)
-}
+let configure = BasicConfigure(dictionary: configuration)
+try configure.run()
 ```
 
-As a relatively simple example, it actually embeds the configuration as a dictionary inside itself, and returns it as JSON when run.
+As a relatively simple example, it actually embeds the configuration as a dictionary inside itself, and uses a class _from a dependency_  (defined in a different git repo, and listed as a dependency in the manifest for the `Example` package) to output it.
 
 This dictionary supplies some build settings, and states that the `BuilderToolExample` tool should be run before and after building the `Example` product.
 
-This `BuilderToolExample` tool is itself an external dependency (defined in a different git repo, and listed as a dependency in the manifest for the `Example` package).
+This `BuilderToolExample` tool is itself is another external dependency.
 
 This code hopefully illustrates the fact that we can fetch, compile and run arbitrary tools as part of the overall build process.
 
-It also demonstrates that the configuration can be generated dynamically (by running code) and therefore could change based on the environment it's run in.
+It also demonstrates that the configuration can be generated dynamically (by running code, including external dependencies) and therefore could change based on the environment it's run in.
 
 In this case it just returns a *static* dictionary, albeit one who's contents are varied at compile time depending on the platform. In theory though the content could also be varied based on runtime values, fetched from the network, loaded from disk, etc.
-
-Having to write bespoke configuration code every time might be a little messy (althogh `Package.swift` itself is a precedent). However, since the `Configure` target itself is just a Swift executable, it can rely on behaviour provided by another package.
-
-Someone could implement a configuration package (let's call it `JSONConfiguration`) which simply works by looking for a file called `Configuration.json` in the working directory and return the contents of that.
-
-To use that in _our_ package, the entire `main.swift` file of our `Configure` target can then just consist of:
-
-```swift
-import JSONConfiguration
-JSONConfiguration.run()
-```
-
-In this way, it should be possible for this system to operate with the absolute minimum of code needing to be written for simple cases - whilst still allowing infinite complexity when required.
 
 
 ## Caveats
@@ -140,7 +127,7 @@ In theory though it would be integrated into the `swift` command. It could possi
 
 This prototype is an overlay on `spm`, so makes no changes to the `Package.swift` format. Because of this, the configuration and tool targets are just listed in the manifest along with the targets from the package that we're building.
 
-This is potentially confusing, a properly integrated implementation might change the DSL slightly to allow the special targets to be listed explicitly, like so:
+This is potentially confusing, a properly integrated implementation might change the format slightly to allow the special targets to be listed explicitly, like so:
 
 ```swift
 

@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "BuilderBasicConfigure",
+        "repositoryURL": "https://github.com/elegantchaos/BuilderBasicConfigure.git",
+        "state": {
+          "branch": null,
+          "revision": "0e27a099b7c40d3815600cd69ba13320c837ecc9",
+          "version": "1.0.3"
+        }
+      },
+      {
         "package": "BuilderToolExample",
         "repositoryURL": "https://github.com/elegantchaos/BuilderToolExample.git",
         "state": {
