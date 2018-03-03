@@ -1,10 +1,12 @@
 # Builder
 
-The Swift Package Manager is cool, but rather basic.
+The [Swift Package Manager](https://github.com/apple/swift-package-manager/tree/master/Documentation) is a cool as a package manager, but rather basic as a build system.
 
-It currently doesn't support running scripts or other tools as part of the build, or have a way to specify configuration settings.
+It uses [llbuild](https://github.com/apple/swift-llbuild) under the hood, so presumably has the potential to be very capable - but currently it doesn't expose much beyond the ability to build/run/test a package.
 
-This is a very simple proof-of-concept implementation of a meta-build command for the Swift Package Manager, which illustrates one way that these features could be added. It was originally inspired by [a discussion in the Swift forums](https://forums.swift.org/t/spm-static-dependencies/10152/35?u=samdeane).
+In particular, it currently doesn't support running scripts or other tools as part of the build, or have a way to specify configuration settings in bulk and apply them uniformly, other than specifying each one on the command line.
+
+This project is a very simple proof-of-concept implementation of a meta-build command for the Swift Package Manager, which illustrates one way that these features could be added. It was originally inspired by a couple of discussions in the Swift forums ([here](https://forums.swift.org/t/spm-static-dependencies/10152/35?u=samdeane) and [here](https://forums.swift.org/t/support-of-spm-scripts/10288)).
 
 The Builder executable built by this package is intended to be used _to build other Swift Package Manager packages_.
 
@@ -12,7 +14,7 @@ An example package is provided (in the `Example/` folder), which you can run Bui
 
 The approach taken was deliberately chosen to work with the _current_ abilities of spm, so that the prototype could be a standalone tool that sits _on top of_ spm and uses it.
 
-A real implementation could be integrated into spm itself, or could continue as a layer on top of it. The main advantage of integration is just that there's no extra tool to have to install.
+A real implementation could be integrated into SwiftPM itself, or could continue as a layer on top of it. The main advantage of integration is just that there's no extra tool to have to install.
 
 Please leave comments and suggestions on the Swift forums, or as [issues in github](https://github.com/elegantchaos/Builder/issues).
 
@@ -119,13 +121,13 @@ Lots of things have been glossed over, including:
 
 ### Integration
 
-As mentioned above, this is a prototype, so for ease of development I made it a standalone tool rather than trying to modify `spm` itself.
+As mentioned above, this is a prototype, so for ease of development I made it a standalone tool rather than trying to modify SwiftPM itself.
 
 In theory though it would be integrated into the `swift` command. It could possibly even replace the existing `swift-build` tool (with that being renamed to something else so that this tool could use it). Invoking `swift build` would then run this tool (if no Configuration target was present in the manifest, we could fall back to the previous `swift build` behaviour).
 
 ### Package.swift
 
-This prototype is an overlay on `spm`, so makes no changes to the `Package.swift` format. Because of this, the configuration and tool targets are just listed in the manifest along with the targets from the package that we're building.
+This prototype is an overlay on SwiftPM, so makes no changes to the `Package.swift` format. Because of this, the configuration and tool targets are just listed in the manifest along with the targets from the package that we're building.
 
 This is potentially confusing, a properly integrated implementation might change the format slightly to allow the special targets to be listed explicitly, like so:
 
@@ -164,13 +166,13 @@ let package = Package(
 )
 ```
 
-I suspect that this would be preferable, but I wanted to start with something that didn't require modifying spm itself.
+I suspect that this would be preferable, but I wanted to start with something that didn't require modifying SwiftPM itself.
 
 ### Separate Package File
 
 Rather than living in the main `Package.swift` file, the configuration and tool information could live in its own file which lived alongside the main one.
 
-It could either have a standard name such as `Configure.swift` (which would require changes to spm), or it could live in a sub-folder, such as `Configure/Package.swift`.
+It could either have a standard name such as `Configure.swift` (which would require changes to SwiftPM), or it could live in a sub-folder, such as `Configure/Package.swift`.
 
 
 ### Custom Build Phases
