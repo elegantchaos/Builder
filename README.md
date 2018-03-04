@@ -1,8 +1,8 @@
 # Builder
 
-The [Swift Package Manager](https://github.com/apple/swift-package-manager/tree/master/Documentation) is a cool as a package manager, but rather basic as a build system.
+The [Swift Package Manager](https://github.com/apple/swift-package-manager/tree/master/Documentation) is a capable package manager, but at the moment it's quite basic as a build system.
 
-It uses [llbuild](https://github.com/apple/swift-llbuild) under the hood, so presumably has the potential to be very capable - but currently it doesn't expose much beyond the ability to build/run/test a package.
+It uses [llbuild](https://github.com/apple/swift-llbuild) under the hood, but currently it doesn't expose much beyond the ability to build/run/test a package.
 
 In particular, it currently doesn't support running scripts or other tools as part of the build, or have a way to specify configuration settings in bulk and apply them uniformly, other than specifying each one on the command line.
 
