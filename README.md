@@ -12,7 +12,7 @@ The Builder executable built by this package is intended to be used _to build ot
 
 An example package is provided (in the `Example/` folder), which you can run Builder on.
 
-The approach taken was deliberately chosen to work with the _current_ abilities of spm, so that the prototype could be a standalone tool that sits _on top of_ spm and uses it.
+The approach taken was deliberately chosen to work with the _current_ abilities of SwiftPM, so that the prototype could be a standalone tool that sits _on top of_ SwiftPM and uses it.
 
 A real implementation could be integrated into SwiftPM itself, or could continue as a layer on top of it. The main advantage of integration is just that there's no extra tool to have to install.
 
@@ -44,16 +44,16 @@ If it finds this target, it uses `swift build` and/or `swift run` to do the foll
 - build the Configure target
 - run the resulting executable and capture its output
 - parse this output to obtain a configuration to use to build the actual package
-- build & run any pre-build tools specified by the configuration
-- build the products listed in the configuration, applying any build settings from the configuration
-- build & run any post-build tools listed in the configuration
+- for each phase listed in the configuration, either:
+ - build a product, using `swift build`, and applying any build settings from the configuration
+ - build a tool dependency, and run it, passing the arguments specified in the configuration
 
 The idea behind this approach is that:
 
 - by moving the code for calculating the configuration into its own swift executable, it should be possible to eliminate any non-deterministic swift from the manifest
-- any dependencies required to determine the configuration can be listed in the manifest as dependencies of the Configure target, and will be fetched and built in the normal way
+- dependent packages required to determine the configuration can be listed in the manifest as dependencies of the Configure target, and will be fetched and built in the normal way
 - any tools required for custom build steps can also be listed in the manifest as dependencies
-- although the data format output by the configuration tool needs to be fixed, the actual implementation of it is decoupled from swift itself, making it easier to support multiple different systems
+- although the data format output by the configuration tool needs to be fixed, the actual implementation of it is decoupled from Swift itself, making it easier to support multiple different systems
 
 If this functionality was built into `swift`, then for many cases it would be sufficient to completely define not only the package but how to build it.
 
@@ -73,23 +73,37 @@ In this demo, the `Configure` target from the example project looks like this:
 import BuilderBasicConfigure
 
 #if os(macOS)
-  let settings = ["target" : "x86_64-apple-macosx10.12"]
+let settings = ["target" : "x86_64-apple-macosx10.12"]
 #else
-  let settings : [String:String] = [:]
+let settings : [String:String] = [:]
 #endif
 
 let configuration : [String:Any] = [
     "settings" : settings,
-    "prebuild" : ["BuilderToolExample"],
-    "products" : ["Example"],
-    "postbuild" : ["BuilderToolExample"]
+    "phases" : [
+        [
+            "name" : "Preparing",
+            "tool" : "BuilderToolExample",
+            "arguments":[""]
+        ],
+        [
+            "name" : "Building",
+            "tool" : "build",
+            "arguments":["Example"]
+        ],
+        [
+            "name" : "Packaging",
+            "tool":"BuilderToolExample",
+            "arguments":["blah", "blah"]
+        ]
+    ]
 ]
 
 let configure = BasicConfigure(dictionary: configuration)
 try configure.run()
 ```
 
-As a relatively simple example, it actually embeds the configuration as a dictionary inside itself, and uses a class _from a dependency_  (defined in a different git repo, and listed as a dependency in the manifest for the `Example` package) to output it.
+As a relatively simple example, it actually embeds the configuration as a dictionary inside itself, and uses the `BasicConfigure` class (defined in a different git repo, and listed as a dependency in the manifest for the `Example` package) to output it.
 
 This dictionary supplies some build settings, and states that the `BuilderToolExample` tool should be run before and after building the `Example` product.
 
@@ -173,33 +187,3 @@ I suspect that this would be preferable, but I wanted to start with something th
 Rather than living in the main `Package.swift` file, the configuration and tool information could live in its own file which lived alongside the main one.
 
 It could either have a standard name such as `Configure.swift` (which would require changes to SwiftPM), or it could live in a sub-folder, such as `Configure/Package.swift`.
-
-
-### Custom Build Phases
-
-For simplicity, I went for a fixed order:
-
-- run pre-build tools
-- build products
-- run post-build tools
-
-This is perhaps a little inflexible.
-
-There's no reason why the product build commands couldn't be interleaved with other tool executions, so the whole configuration just becomes some settings and a list of phases to execute:
-
-```
-let configuration : [String:Any] = [
-    "settings" : ["key" : "value"],
-    "phases" : [
-      "run tool1",
-      "build product1",
-      "run tool2",
-      "build product2",
-      "run tool3"
-      ],
-]
-```
-
-Some special commands could be implemented by builder itself (eg "build" might trigger a build via `sketch build`).
-
-Any other commands would be expected to correspond to tool target names, and would be built & run.
