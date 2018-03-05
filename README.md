@@ -148,24 +148,39 @@ It also demonstrates that the configuration can be generated dynamically (by run
 In this case it just returns a *static* dictionary, albeit one who's contents are varied at compile time depending on the platform. In theory though the content could also be varied based on runtime values, fetched from the network, loaded from disk, etc.
 
 
-## Caveats
+## Flaws
 
-I hacked this together as a demo. It builds for me on MacOS and Linux - your mileage may vary.
+### Caveat Emptor
+
+I hacked this together as a quick demo, although it's evolved a bit since then.
+
+It builds for me on MacOS and Linux - your mileage may vary.
 
 Lots of things have been glossed over, including:
 
 - passing in useful environment to the helper tools (Configure and Tool)
 - niceties such as error checking, help, etc, etc...
-- running different tools, or using different configurations, for each product
 - generating a fully-functional xcode project with
   - dependencies and sub-projects to build the tools
   - an xcconfig file built from the settings, applied to the products
   - build phases to run the tools as part of the build (this is tricky, but by no means impossible)
 - the configuration and tool items are defined as targets, but built/run as products. This seems to work but is probably unsupported behaviour.
 
-### Other Flaws
+### Declarative Shmarative
 
-#### Dependency Checking
+A stated aim of the package format is to create a declarative model of the package, which SwiftPM can use to build it.
+
+What Builder is doing arguably defeats this.
+
+I can see why a fully declarative model is attractive, but by definition it requires a rich enough language to be able to describe all the ways that any product can be built.
+
+Since this is effectively infinite in scope, it's a pretty hard problem to solve - there are a lot of weird requirements and custom build steps out there.
+
+The fact that the package format includes an optional section of additional code seems to acknowledge this flaw itself, and in my view this is a necessary evil currently, and probably always will be.
+
+As such, I actually think that Builder provides a cleaner way to execute arbitrary swift code during the build that the optional section does. At least with Builder the custom code lives outside the `Package.swift` file, and in fact is neatly packaged up into its own package(s) which can safely be re-usable, have dependencies, and be arbitrarily complex.
+
+### Dependency Checking
 
 To quote the [original community proposal for SwiftPM](https://github.com/apple/swift-package-manager/blob/master/Documentation/PackageManagerCommunityProposal.md#support-for-other-build-systems):
 
@@ -180,7 +195,7 @@ To quote the [original community proposal for SwiftPM](https://github.com/apple/
 
 In effect what this tool supplies is those hooks, but instead of living inside SwiftPM, they exist on the outside.
 
-Probably the biggest flaw with our approach is the one alluded to in the final paragraph of the quote.
+An obvious flaw with our approach is the one alluded to in the final paragraph of the quote.
 
 The SwiftPM build system itself is backed by `llbuild`, thus can efficiently re-build only the things that it has to. If one file changes, only things that depend on it need be rebuilt.
 
@@ -190,27 +205,15 @@ Let's say we add a custom build phase which runs `mogenerator` and creates some 
 
 Builder however will not be so smart and will run `mogenerator` every time, regardless of whether the model has changed.
 
-Clearly we could implement our own dependency checking in each custom tool. Possibly we could extend Builder's model in a way that allows custom tools to describe their dependencies, so that we could provide the dependency logic for all custom tools, maybe even backed by `llbuild`.
+Clearly `mogenerator` could implement its own dependency checking, as could every custom tool. Not ideal.
+
+Possibly we could extend Builder's model in a way that allows custom tools to describe their dependencies, so that we could provide the dependency logic for all custom tools, maybe even backed by `llbuild`. Xcode's custom build phases attempts to do this, allowing you to describe a list of input and output files, but it's not very flexible and requires files to be listed individually. A decent system would require good pattern matching and the ability to write general rules...
 
 If we do that then rather than just enhancing the SwiftPM build system, we're at least halfway towards re-implementing it.
 
 What we really need is to be able to hook into SwiftPM's own use of `llbuild` at a level where it can invoke our custom phases for us, when it knows that it needs to.
 
 The fact that we can't do that is not ideal - but it is part of the reason why this tool exists in the first place :grin:.
-
-#### Declarative Shmarative
-
-A stated aim of the package format is to create a declarative model of the package, which SwiftPM can use to build it.
-
-What Builder is doing arguably defeats this.
-
-I can see why a fully declarative model is attractive, but by definition it requires a rich enough language to be able to describe all the ways that any product can be built.
-
-Since this is effectively infinite in scope, it's a pretty hard problem to solve - there are a lot of weird requirements and custom build steps out there.
-
-The fact that the package format includes an optional section of additional code seems to acknowledge this flaw itself, and in my view this is a necessary evil currently, and probably always will be.
-
-As such, I actually think that Builder provides a cleaner way to execute arbitrary swift code during the build that the optional section does. At least with Builder the custom code lives outside the `Package.swift` file, and in fact is neatly packaged up into its own package(s) which can safely be re-usable, have dependencies, and be arbitrarily complex.
 
 
 
@@ -234,9 +237,13 @@ The tools that could be integrated into Builder are obviously infinite, but a fe
 
 ### Integration
 
-As mentioned above, this is a prototype, so for ease of development I made it a standalone tool rather than trying to modify SwiftPM itself.
+This is a prototype, so for ease of development I made it a standalone tool rather than trying to modify SwiftPM itself.
 
-In theory though it would be integrated into the `swift` command. It could possibly even replace the existing `swift-build` tool (with that being renamed to something else so that this tool could use it). Invoking `swift build` would then run this tool (if no Configuration target was present in the manifest, we could fall back to the previous `swift build` behaviour).
+In theory though it could be integrated into the `swift` command.
+
+It could replace the existing `swift-build` tool (with that being renamed to something else so that this tool could use it). Invoking `swift build` would then run this tool (if no Configuration target was present in the manifest, we could fall back to the previous `swift build` behaviour).
+
+Clearly this would have performance implications.
 
 ### Package.swift
 
@@ -287,6 +294,7 @@ Rather than living in the main `Package.swift` file, the configuration and tool 
 
 It could either have a standard name such as `Configure.swift` (which would require changes to SwiftPM), or it could live in a sub-folder, such as `Configure/Package.swift`.
 
+
 ### Libraries Not Executables
 
 It's a bit messy that the `Configure` target it built as an executable, and thus has to output the configuration as JSON and then have Builder convert it back into objects on the other side.
@@ -294,3 +302,9 @@ It's a bit messy that the `Configure` target it built as an executable, and thus
 In theory it ought to be possible to build Configure as a dynamic library, then link to it and use it directly from Builder.
 
 Similarly this could also be done for the standalone tools - although there is arguably more advantage with them being able to be invoked manually from the command line.
+
+### Configuration Support
+
+The configuration that the `Configure` target returns is essentially just a big dictionary, but it has a defined structure.
+
+It would be possible to build support libraries to allow the configuration itself to be specified in a declarative manner (if it's static), or to at least support building it up semantically with easily understandable methods or enums representing the available compiler settings and their legal values.
