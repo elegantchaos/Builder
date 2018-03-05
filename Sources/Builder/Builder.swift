@@ -23,9 +23,11 @@ import os
  */
 
 class Builder {
+    let command : String
     var environment : [String:String] = ProcessInfo.processInfo.environment
     
-    init() {
+    init(command : String = "build") {
+        self.command = command
         // TODO: flesh this out
         self.environment["BUILDER_COMMAND"] = "build"
         self.environment["BUILDER_CONFIGURATION"] = "debug" // TODO: read from the command line
@@ -111,6 +113,42 @@ class Builder {
     }
     
     /**
+     Execute the phases associated with a given scheme.
+     */
+    
+    func execute(scheme name: String, configuration : Configuration, settings : [String]) throws {
+        guard let scheme = configuration.schemes[name] else {
+            throw Failure.missingScheme(scheme: name)
+        }
+        
+        output.log("Scheme: \(command)")
+        for phase in scheme {
+            setStage(phase.name)
+            let tool = phase.tool
+            switch (tool) {
+            case "test":
+                let product = phase.arguments[0]
+                let toolOutput = try swift("test", arguments: settings)
+                output.log("- tested \(product).\n\n\(toolOutput)")
+            case "run":
+                let product = phase.arguments[0]
+                let toolOutput = try swift("run", arguments: [product] + settings)
+                output.log("- ran \(product).\n\n\(toolOutput)")
+            case "build":
+                let product = phase.arguments[0]
+                let _ = try swift("build", arguments: ["--product", product] + settings)
+                output.log("- built \(product).")
+            case "scheme":
+                let scheme = phase.arguments[0]
+                try execute(scheme: scheme, configuration: configuration, settings: settings)
+            default:
+                let toolOutput = try swift("run", arguments: [tool] + phase.arguments)
+                output.log("- ran \(tool): \(toolOutput)")
+            }
+        }
+    }
+    
+    /**
      Perform the build.
      */
 
@@ -129,20 +167,9 @@ class Builder {
         let settings = configuration.compilerSettings()
         environment["BUILDER_SETTINGS"] = settings.joined(separator: ",")
 
-        // run any prebuild tools
-        for phase in configuration.phases {
-            setStage(phase.name)
-            let tool = phase.tool
-            if (tool == "build") {
-                let product = phase.arguments[0]
-                let _ = try swift("build", arguments: ["--product", product] + settings)
-                output.log("- built \(product).")
-            } else {
-                let toolOutput = try swift("run", arguments: [tool] + phase.arguments)
-                output.log("- ran \(tool): \(toolOutput)")
-            }
-        }
-
+        // execute the scheme associated with the primary command we were passed (run/build/test/etc)
+        try execute(scheme: command, configuration: configuration, settings: settings)
+        
         output.log("\nDone.\n\n")
     }
 

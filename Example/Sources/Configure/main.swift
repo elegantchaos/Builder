@@ -14,22 +14,44 @@ let settings : [String:String] = [:]
 
 let configuration : [String:Any] = [
     "settings" : settings,
-    "phases" : [
-        [
-            "name" : "Preparing",
-            "tool" : "BuilderToolExample",
-            "arguments":[""]
+    "schemes" : [
+        "build" : [
+            [
+                "name" : "Preparing",
+                "tool" : "BuilderToolExample",
+                "arguments":[""]
+            ],
+            [
+                "name" : "Building",
+                "tool" : "build",
+                "arguments":["Example"]
+            ],
+            [
+                "name" : "Packaging",
+                "tool":"BuilderToolExample",
+                "arguments":["blah", "blah"]
+            ]
         ],
-        [
-            "name" : "Building",
-            "tool" : "build",
-            "arguments":["Example"]
+        "test" : [
+            [
+                "name" : "Testing",
+                "tool" : "test",
+                "arguments":["Example"]
+            ],
         ],
-        [
-            "name" : "Packaging",
-            "tool":"BuilderToolExample",
-            "arguments":["blah", "blah"]
+        "run" : [
+            [
+                "name" : "Building",
+                "tool" : "scheme",
+                "arguments":["build"]
+            ],
+            [
+                "name" : "Running",
+                "tool" : "run",
+                "arguments":["Example"]
+            ],
         ]
+
     ]
 ]
 
