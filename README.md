@@ -56,7 +56,7 @@ These commands can consist of:
 - test: test a product using `swift test`, applying the build settings from the configuration
 - run: run a product using `swift run`, applying the build settings from the configuration
 - scheme: perform another nested scheme
-- <anything else>: treat the named command as a dependency; build and run it with `swift run`, passing the arguments specified in the configuration
+- *anything else*: treat the named command as a dependency; build and run it with `swift run`, passing the arguments specified in the configuration
 
 The idea behind this approach is that:
 
