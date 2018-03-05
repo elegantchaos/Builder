@@ -163,9 +163,9 @@ Lots of things have been glossed over, including:
   - build phases to run the tools as part of the build (this is tricky, but by no means impossible)
 - the configuration and tool items are defined as targets, but built/run as products. This seems to work but is probably unsupported behaviour.
 
-## Possible Flaws
+### Other Flaws
 
-### Dependency Checking
+#### Dependency Checking
 
 To quote the [original community proposal for SwiftPM](https://github.com/apple/swift-package-manager/blob/master/Documentation/PackageManagerCommunityProposal.md#support-for-other-build-systems):
 
@@ -198,7 +198,7 @@ What we really need is to be able to hook into SwiftPM's own use of `llbuild` at
 
 The fact that we can't do that is not ideal - but it is part of the reason why this tool exists in the first place :grin:.
 
-### Declarative Shmarative
+#### Declarative Shmarative
 
 A stated aim of the package format is to create a declarative model of the package, which SwiftPM can use to build it.
 
@@ -215,7 +215,22 @@ As such, I actually think that Builder provides a cleaner way to execute arbitra
 
 
 
-## Other Ideas
+## Ideas And Improvements
+
+### Potential Tools
+
+The tools that could be integrated into Builder are obviously infinite, but a few that I imagine being of fairly immediate use are those that replace the built-in abilities of Xcode, such as:
+
+- copy resources
+- build an application/framework bundle
+- expand Info.plist
+- code sign
+- expand values into source files
+- calculate the build no (eg from the git commit count)
+- archive build products
+- upload a build
+- release on github
+- post notifications
 
 ### Integration
 
@@ -271,3 +286,11 @@ I suspect that this would be preferable, but I wanted to start with something th
 Rather than living in the main `Package.swift` file, the configuration and tool information could live in its own file which lived alongside the main one.
 
 It could either have a standard name such as `Configure.swift` (which would require changes to SwiftPM), or it could live in a sub-folder, such as `Configure/Package.swift`.
+
+### Libraries Not Executables
+
+It's a bit messy that the `Configure` target it built as an executable, and thus has to output the configuration as JSON and then have Builder convert it back into objects on the other side.
+
+In theory it ought to be possible to build Configure as a dynamic library, then link to it and use it directly from Builder.
+
+Similarly this could also be done for the standalone tools - although there is arguably more advantage with them being able to be invoked manually from the command line.
