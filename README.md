@@ -37,6 +37,8 @@ Finally, the script runs the built example product.
 
 ## Discussion
 
+Builder is invoked as follows: `builder <scheme>`. If not supplied, scheme defaults to `build` (more on schemes later).
+
 Builder works by looking for a special target called `Configure` in the package that it's trying to build (defined in the `Package.swift` file).
 
 If it finds this target, it uses `swift build` and/or `swift run` to do the following:
@@ -44,9 +46,17 @@ If it finds this target, it uses `swift build` and/or `swift run` to do the foll
 - build the Configure target
 - run the resulting executable and capture its output
 - parse this output to obtain a configuration to use to build the actual package
-- for each phase listed in the configuration, either:
- - build a product, using `swift build`, and applying any build settings from the configuration
- - build a tool dependency, and run it, passing the arguments specified in the configuration
+- extract compiler and linker settings from the configuration
+
+It then looks in the configuration for a scheme matching the name that was supplied on the command line (or `build` if none was supplied). If present, this scheme describes a set of commands to execute in order to perform the scheme.
+
+These commands can consist of:
+
+- build: build a product, `swift build`, applying the build settings from the configuration
+- test: test a product using `swift test`, applying the build settings from the configuration
+- run: run a product using `swift run`, applying the build settings from the configuration
+- scheme: perform another nested scheme
+- *anything else*: treat the named command as a dependency; build and run it with `swift run`, passing the arguments specified in the configuration
 
 The idea behind this approach is that:
 
@@ -80,22 +90,44 @@ let settings : [String:String] = [:]
 
 let configuration : [String:Any] = [
     "settings" : settings,
-    "phases" : [
-        [
-            "name" : "Preparing",
-            "tool" : "BuilderToolExample",
-            "arguments":[""]
+    "schemes" : [
+        "build" : [
+            [
+                "name" : "Preparing",
+                "tool" : "BuilderToolExample",
+                "arguments":[""]
+            ],
+            [
+                "name" : "Building",
+                "tool" : "build",
+                "arguments":["Example"]
+            ],
+            [
+                "name" : "Packaging",
+                "tool":"BuilderToolExample",
+                "arguments":["blah", "blah"]
+            ]
         ],
-        [
-            "name" : "Building",
-            "tool" : "build",
-            "arguments":["Example"]
+        "test" : [
+            [
+                "name" : "Testing",
+                "tool" : "test",
+                "arguments":["Example"]
+            ],
         ],
-        [
-            "name" : "Packaging",
-            "tool":"BuilderToolExample",
-            "arguments":["blah", "blah"]
+        "run" : [
+            [
+                "name" : "Building",
+                "tool" : "scheme",
+                "arguments":["build"]
+            ],
+            [
+                "name" : "Running",
+                "tool" : "run",
+                "arguments":["Example"]
+            ],
         ]
+
     ]
 ]
 
@@ -131,7 +163,74 @@ Lots of things have been glossed over, including:
   - build phases to run the tools as part of the build (this is tricky, but by no means impossible)
 - the configuration and tool items are defined as targets, but built/run as products. This seems to work but is probably unsupported behaviour.
 
-## Other Ideas
+### Other Flaws
+
+#### Dependency Checking
+
+To quote the [original community proposal for SwiftPM](https://github.com/apple/swift-package-manager/blob/master/Documentation/PackageManagerCommunityProposal.md#support-for-other-build-systems):
+
+> #### Support for Other Build Systems
+> We are considering supporting hooks for the Swift Package Manager to call out to other build systems,
+> and/or to invoke shell scripts.
+>
+> Adding this feature would further improve the process of adapting existing libraries for use in Swift code.
+>
+> We intend to tread cautiously here, as incorporating shell scripts and other external build processes significantly limits
+> the ability of the Swift Package Manager to understand and analyze the build process.
+
+In effect what this tool supplies is those hooks, but instead of living inside SwiftPM, they exist on the outside.
+
+Probably the biggest flaw with our approach is the one alluded to in the final paragraph of the quote.
+
+The SwiftPM build system itself is backed by `llbuild`, thus can efficiently re-build only the things that it has to. If one file changes, only things that depend on it need be rebuilt.
+
+The custom phases that we execute live outside of the SwiftPM build system. It has no knowledge of them, and so we can't take advantage of this behaviour.
+
+Let's say we add a custom build phase which runs `mogenerator` and creates some Swift source files from a model. If we're lucky, SwiftPM may be smart enough to only recompile the generated source files that have actually changed.
+
+Builder however will not be so smart and will run `mogenerator` every time, regardless of whether the model has changed.
+
+Clearly we could implement our own dependency checking in each custom tool. Possibly we could extend Builder's model in a way that allows custom tools to describe their dependencies, so that we could provide the dependency logic for all custom tools, maybe even backed by `llbuild`.
+
+If we do that then rather than just enhancing the SwiftPM build system, we're at least halfway towards re-implementing it.
+
+What we really need is to be able to hook into SwiftPM's own use of `llbuild` at a level where it can invoke our custom phases for us, when it knows that it needs to.
+
+The fact that we can't do that is not ideal - but it is part of the reason why this tool exists in the first place :grin:.
+
+#### Declarative Shmarative
+
+A stated aim of the package format is to create a declarative model of the package, which SwiftPM can use to build it.
+
+What Builder is doing arguably defeats this.
+
+I can see why a fully declarative model is attractive, but by definition it requires a rich enough language to be able to describe all the ways that any product can be built.
+
+Since this is effectively infinite in scope, it's a pretty hard problem to solve - there are a lot of weird requirements and custom build steps out there.
+
+The fact that the package format includes an optional section of additional code seems to acknowledge this flaw itself, and in my view this is a necessary evil currently, and probably always will be.
+
+As such, I actually think that Builder provides a cleaner way to execute arbitrary swift code during the build that the optional section does. At least with Builder the custom code lives outside the `Package.swift` file, and in fact is neatly packaged up into its own package(s) which can safely be re-usable, have dependencies, and be arbitrarily complex.
+
+
+
+
+## Ideas And Improvements
+
+### Potential Tools
+
+The tools that could be integrated into Builder are obviously infinite, but a few that I imagine being of fairly immediate use are those that replace the built-in abilities of Xcode, such as:
+
+- copy resources
+- build an application/framework bundle
+- expand Info.plist
+- code sign
+- expand values into source files
+- calculate the build no (eg from the git commit count)
+- archive build products
+- upload a build
+- release on github
+- post notifications
 
 ### Integration
 
@@ -187,3 +286,11 @@ I suspect that this would be preferable, but I wanted to start with something th
 Rather than living in the main `Package.swift` file, the configuration and tool information could live in its own file which lived alongside the main one.
 
 It could either have a standard name such as `Configure.swift` (which would require changes to SwiftPM), or it could live in a sub-folder, such as `Configure/Package.swift`.
+
+### Libraries Not Executables
+
+It's a bit messy that the `Configure` target it built as an executable, and thus has to output the configuration as JSON and then have Builder convert it back into objects on the other side.
+
+In theory it ought to be possible to build Configure as a dynamic library, then link to it and use it directly from Builder.
+
+Similarly this could also be done for the standalone tools - although there is arguably more advantage with them being able to be invoked manually from the command line.

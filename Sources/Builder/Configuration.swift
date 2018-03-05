@@ -35,7 +35,7 @@ struct Phase : Decodable {
 
 struct Configuration : Decodable {
     let settings : [String:String]
-    let phases : [Phase]
+    let schemes : [String:[Phase]]
     
     func compilerSettings() -> [String] {
         var args : [String] = []
