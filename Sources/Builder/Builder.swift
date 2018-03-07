@@ -24,13 +24,16 @@ import os
 
 class Builder {
     let command : String
+    let configuration : String
     var environment : [String:String] = ProcessInfo.processInfo.environment
     
-    init(command : String = "build") {
+    init(command : String = "build", configuration : String = "debug") {
         self.command = command
-        // TODO: flesh this out
-        self.environment["BUILDER_COMMAND"] = "build"
-        self.environment["BUILDER_CONFIGURATION"] = "debug" // TODO: read from the command line
+        self.configuration = configuration
+
+        // TODO: flesh the environment out with more useful stuff
+        self.environment["BUILDER_COMMAND"] = command
+        self.environment["BUILDER_CONFIGURATION"] = configuration
     }
     
     /**
@@ -128,15 +131,15 @@ class Builder {
             switch (tool) {
             case "test":
                 let product = phase.arguments[0]
-                let toolOutput = try swift("test", arguments: settings)
+                let toolOutput = try swift("test", arguments: ["--configuration", self.configuration] + settings)
                 output.log("- tested \(product).\n\n\(toolOutput)")
             case "run":
                 let product = phase.arguments[0]
-                let toolOutput = try swift("run", arguments: [product] + settings)
+                let toolOutput = try swift("run", arguments: [product, "--configuration", self.configuration] + settings)
                 output.log("- ran \(product).\n\n\(toolOutput)")
             case "build":
                 let product = phase.arguments[0]
-                let _ = try swift("build", arguments: ["--product", product] + settings)
+                let _ = try swift("build", arguments: ["--product", product, "--configuration", self.configuration] + settings)
                 output.log("- built \(product).")
             case "scheme":
                 let scheme = phase.arguments[0]
