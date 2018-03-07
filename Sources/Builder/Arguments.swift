@@ -42,7 +42,7 @@ struct Arguments {
     }
     
     /**
-     Return an option, or a default value if it's missing.
+     Return an option.
      It's an error to try to read an option that wasn't passed in when
      we were set up.
      */
@@ -52,17 +52,11 @@ struct Arguments {
             return value
         }
         
-        if let value = parsed["-\(name)"] as? String {
-            return value
-        }
-        
         throw Failure.unknownOption(name: name)
     }
 
     /**
      Return an argument, or a default value if it's missing.
-     It's an error to try to read an argument that wasn't passed in when
-     we were set up.
      */
     
     func argument(_ name : String, `default` : String) -> String  {
