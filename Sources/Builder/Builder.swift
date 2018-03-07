@@ -93,7 +93,7 @@ class Builder {
         let capturedOutput = String(data:data, encoding:String.Encoding.utf8)
         let status = process.terminationStatus
         if status != 0 {
-            output.log("\(command) failed \(status)")
+            verbose.log("\(command) failed \(status)")
             let errorOutput = String(data:errData, encoding:String.Encoding.utf8)
             throw Failure.failed(output: capturedOutput, error: errorOutput)
         }
@@ -134,8 +134,10 @@ class Builder {
     /**
      Announce the build stage.
     */
-    internal func setStage(_ stage : String) {
-        output.log("\n\(stage):")
+    internal func setStage(_ stage : String, announce : Bool = true) {
+        if announce {
+            output.log("\n\(stage):")
+        }
         environment["BUILDER_STAGE"] = stage.lowercased()
     }
     
@@ -148,7 +150,8 @@ class Builder {
             throw Failure.missingScheme(name: name)
         }
         
-        output.log("Scheme: \(command)")
+        output.log("\nScheme:\n- \(name).")
+        
         for phase in scheme {
             setStage(phase.name)
             let tool = phase.tool
@@ -181,7 +184,7 @@ class Builder {
 
     func execute(configurationTarget : String) throws {
         // try to build the Configure target
-        setStage("Configure")
+        setStage("Configuring", announce: false)
         do {
             let _ = try swift("build", arguments: ["--product", configurationTarget])
         } catch Failure.failed(let stdout, let stderr) {
@@ -194,9 +197,12 @@ class Builder {
 
         // if we built it, run it, and parse its output as a JSON configuration
         // (we don't use `swift run` here as we don't want to capture any of its output)
+        setStage("Configuring")
         let binPath = try swift("build", arguments: ["--product", configurationTarget, "--show-bin-path"])
+        output.log("- running config")
         let configurePath = URL(fileURLWithPath:binPath.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)).appendingPathComponent(configurationTarget).path
         let json = try run(configurePath)
+        output.log("- parsing output")
         let configuration = try parse(configuration: json)
         
         let settings = configuration.compilerSettings()
