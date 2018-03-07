@@ -121,7 +121,7 @@ class Builder {
     
     func execute(scheme name: String, configuration : Configuration, settings : [String]) throws {
         guard let scheme = configuration.schemes[name] else {
-            throw Failure.missingScheme(scheme: name)
+            throw Failure.missingScheme(name: name)
         }
         
         output.log("Scheme: \(command)")

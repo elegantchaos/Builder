@@ -1,12 +1,18 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-// Created by Sam Deane, 28/02/2018.
+// Created by Sam Deane, 07/03/2018.
 // All code (c) 2018 - present day, Elegant Chaos Limited.
 // For licensing terms, see http://elegantchaos.com/license/liberal/.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+/**
+ Rudimentary argument parsing.
+ 
+ For a real implementation we'd be better off with something like docopt here.
+ */
 
 struct Arguments {
-    class Option {
+    
+    internal class Option {
         let name : String
         let consume : Bool
         let hasValue : Bool
@@ -20,21 +26,29 @@ struct Arguments {
         }
     }
     
-    class BoolOption : Option {
+    internal class BoolOption : Option {
         init(_ name : String, consume : Bool = true) {
             super.init(name, consume: consume, hasValue: false, default: "false")
         }
     }
     
-    class ValueOption : Option {
+    internal class ValueOption : Option {
         init(_ name : String, consume : Bool = true, `default` : String? = nil) {
             super.init(name, consume: consume, hasValue: true, default: `default`)
         }
     }
     
+    private let options : [String:String]
     let application : String
-    let options : [String:String]
     var unused : [String] = []
+    
+    /**
+     Parse the command line arguments.
+     
+     Any recognised options are pulled out into the options dictionary.
+     Other arguments end up in the unused array (so that they can be passed on to a sub-process, for example).
+     */
+    
     init(options recognisedOptions : [Option]) {
         
         var options : [String:String] = [:]
@@ -78,15 +92,25 @@ struct Arguments {
         self.unused.removeFirst()
     }
     
-    func option(_ name : String, `default` : String = "") -> String {
+    /**
+     Return an option, or a default value if it's missing.
+     It's an error to try to read an option that wasn't passed in when
+     we were set up.
+     */
+    
+    func option(_ name : String) throws -> String  {
         guard let value = options[name] else {
-            return `default`
+            throw Failure.unknownOption(name: name)
         }
         
         return value
     }
     
-    mutating func pop(`default`: String ) -> String {
+    /**
+     Shift a value off the front of the unused arguments, consuming it.
+    */
+    
+    mutating func shift(`default`: String ) -> String {
         guard unused.count > 0 else {
             return `default`
         }
