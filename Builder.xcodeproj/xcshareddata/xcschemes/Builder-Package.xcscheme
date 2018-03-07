@@ -14,6 +14,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "Logger::Logger"
+               BuildableName = "Logger.framework"
+               BlueprintName = "Logger"
+               ReferencedContainer = "container:Builder.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "Docopt::Docopt"
                BuildableName = "Docopt.framework"
                BlueprintName = "Docopt"
@@ -31,20 +45,6 @@
                BlueprintIdentifier = "Builder::Builder"
                BuildableName = "Builder"
                BlueprintName = "Builder"
-               ReferencedContainer = "container:Builder.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "Logger::Logger"
-               BuildableName = "Logger.framework"
-               BlueprintName = "Logger"
                ReferencedContainer = "container:Builder.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -73,9 +73,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "Docopt::Docopt"
-            BuildableName = "Docopt.framework"
-            BlueprintName = "Docopt"
+            BlueprintIdentifier = "Logger::Logger"
+            BuildableName = "Logger.framework"
+            BlueprintName = "Logger"
             ReferencedContainer = "container:Builder.xcodeproj">
          </BuildableReference>
       </MacroExpansion>

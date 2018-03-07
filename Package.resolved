@@ -12,11 +12,11 @@
       },
       {
         "package": "Logger",
-        "repositoryURL": "https://github.com/elegantchaos/Logger.git",
+        "repositoryURL": "https://github.com/elegantchaos/Logger",
         "state": {
           "branch": null,
-          "revision": "d0d472ed70c4ed3cd964efa773c26e006edb17a0",
-          "version": "1.0.5"
+          "revision": "a91193074ab3bc125fd3c7dfb9338d8d79bab98f",
+          "version": "1.0.6"
         }
       }
     ]

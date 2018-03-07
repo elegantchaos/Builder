@@ -5,16 +5,17 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 /**
- Rudimentary argument parsing.
-
- For a real implementation we'd be better off with something like docopt here.
+ Argument parsing.
+ Uses Docopt for the heavy lifting, but performs a bit of preliminary
+ cleanup first, and provides a simplified API to read options and arguments.
  */
 
 import Docopt
+import Logger
 
 struct Arguments {
     let program : String
-    let parsed : [String:Any]
+    private let parsed : [String:Any]
     
     /**
      Parse the command line arguments.
@@ -24,21 +25,9 @@ struct Arguments {
      */
 
     init(documentation : String) {
-        var args : [String] = []
-        var dropNext = false
-        for argument in CommandLine.arguments {
-            if (argument == "-logs") || (argument == "-logs+" || argument == "-logs-") {
-                dropNext = true
-            } else if dropNext {
-                dropNext = false
-            } else {
-                args.append(argument)
-            }
-        }
-
-        self.program = args[0]
-        args.removeFirst()
-        self.parsed = Docopt.parse(doc, argv: args, help: true, version: "1.0")
+        let filteredArguments = Manager.removeLoggingOptions(from: CommandLine.arguments)
+        self.program = filteredArguments[0]
+        self.parsed = Docopt.parse(doc, argv: Array(filteredArguments[1...]), help: true, version: "1.0")
     }
     
     /**
