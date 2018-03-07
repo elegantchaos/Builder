@@ -6,20 +6,40 @@
 
 import Logger
 
+let doc : String = """
+Build, test, and run SwiftPM packages.
+
+Usage:
+    builder [<command>] [--configuration <config>]
+    builder (-h | --help)
+
+Arguments:
+    <command>                       The command to execute [default: build].
+
+
+Options:
+    -h, --help                      Show this text.
+    -c, --configuration <config>    The configuration to build [default: debug].
+    -logs <logs>                    Specify all log channels to enable.
+    -logs+ <logs>                   Specify additional log channels to enable.
+    -logs- <logs>                   Specify log channels to disable.
+
+Examples:
+    builder build --configuration release
+    builder test
+
+
+
+"""
+
 let output = Logger.stdout
 let verbose = Logger("com.elegantchaos.builder.verbose", handlers:[PrintHandler()])
 
-let options =     [
-    Arguments.ValueOption("-logs"),
-    Arguments.ValueOption("--configuration", default: "debug"),
-    Arguments.BoolOption("--testBool")
-]
-
-var args = Arguments(options: options)
-let command = args.shift(default: "build")
+var args = Arguments(documentation: doc)
+let command = args.argument("command", default: "build")
 
 do {
-    let configuration = try args.option("--configuration")
+    let configuration = try args.option("configuration")
     let builder = Builder(command: command, configuration: configuration)
     try builder.build(configurationTarget: "Configure")
 
@@ -39,4 +59,5 @@ do {
 } catch {
     output.log("Failed: \(error)")
 }
+
 

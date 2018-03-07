@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "Docopt",
+        "repositoryURL": "https://github.com/elegantchaos/docopt.swift",
+        "state": {
+          "branch": null,
+          "revision": "0425bb915e477ce9dbc9733ee06e519bf3b59840",
+          "version": "0.6.7"
+        }
+      },
+      {
         "package": "Logger",
         "repositoryURL": "https://github.com/elegantchaos/Logger.git",
         "state": {
