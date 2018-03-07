@@ -37,6 +37,37 @@ class Builder {
     }
     
     /**
+     Return the path to the swift binary.
+     */
+    
+    func swiftPath() -> String {
+        #if os(macOS)
+        let swift = "/usr/bin/swift" // should be discovered from the environment
+        #else
+        let swift = "/home/sam/Downloads/swift/usr/bin/swift" // NB clearly you need to change this to correspond to your setup, at the moment...
+        #endif
+        
+        return swift
+    }
+    
+    
+    /**
+     Invoke a command and some optional arguments.
+     Control is transferred to the launched process, and this function doesn't return.
+     */
+    
+    func exec(_ command : String, arguments: [String] = []) {
+        let process = Process()
+        process.launchPath = command
+        process.arguments = arguments
+        process.environment = self.environment
+        process.launch()
+        process.waitUntilExit()
+        exit(process.terminationStatus)
+    }
+
+    
+    /**
      Invoke a command and some optional arguments.
      On success, returns the captured output from stdout.
      On failure, throws an error.
@@ -81,15 +112,8 @@ class Builder {
      */
 
     func swift(_ command : String, arguments: [String] = []) throws -> String {
-
-        #if os(macOS)
-        let swift = "/usr/bin/swift" // should be discovered from the environment
-        #else
-        let swift = "/home/sam/Downloads/swift/usr/bin/swift"
-        #endif
-
         verbose.log("running swift \(command)")
-        return try run(swift, arguments: [command] + arguments)
+        return try run(swiftPath(), arguments: [command] + arguments)
     }
 
     /**
@@ -155,10 +179,18 @@ class Builder {
      Perform the build.
      */
 
-    func build(configurationTarget : String) throws {
+    func execute(configurationTarget : String) throws {
         // try to build the Configure target
         setStage("Configure")
-        let _ = try swift("build", arguments: ["--product", configurationTarget])
+        do {
+            let _ = try swift("build", arguments: ["--product", configurationTarget])
+        } catch Failure.failed(let stdout, let stderr) {
+            if stderr == "error: no product named \'\(configurationTarget)\'\n" {
+                exec(swiftPath(), arguments: Array(CommandLine.arguments[1...]))
+            } else {
+                throw Failure.failed(output: stdout, error: stderr)
+            }
+        }
 
         // if we built it, run it, and parse its output as a JSON configuration
         // (we don't use `swift run` here as we don't want to capture any of its output)

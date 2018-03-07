@@ -6,7 +6,7 @@
 
 import Logger
 
-let doc : String = """
+let doc = """
 Build, test, and run SwiftPM packages.
 
 Usage:
@@ -41,7 +41,7 @@ let command = args.argument("command", default: "build")
 do {
     let configuration = try args.option("configuration")
     let builder = Builder(command: command, configuration: configuration)
-    try builder.build(configurationTarget: "Configure")
+    try builder.execute(configurationTarget: "Configure")
 
 } catch Failure.decodingFailed {
     output.log("Couldn't decode JSON")
