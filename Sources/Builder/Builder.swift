@@ -5,7 +5,6 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 import Foundation
-import os
 
 /**
  Builder.
@@ -27,7 +26,7 @@ class Builder {
     let configuration : String
     var environment : [String:String] = ProcessInfo.processInfo.environment
     lazy var swiftPath = findSwift()
-    
+
     init(command : String = "build", configuration : String = "debug") {
         self.command = command
         self.configuration = configuration
@@ -36,11 +35,11 @@ class Builder {
         self.environment["BUILDER_COMMAND"] = command
         self.environment["BUILDER_CONFIGURATION"] = configuration
     }
-    
+
     /**
      Return the path to the swift binary.
      */
-    
+
     func findSwift() -> String {
         let path : String
         do {
@@ -48,16 +47,16 @@ class Builder {
         } catch {
             path = "/usr/bin/swift"
         }
-        
+
         return path
     }
-    
-    
+
+
     /**
      Invoke a command and some optional arguments.
      Control is transferred to the launched process, and this function doesn't return.
      */
-    
+
     func exec(_ command : String, arguments: [String] = []) {
         let process = Process()
         process.launchPath = command
@@ -68,7 +67,7 @@ class Builder {
         exit(process.terminationStatus)
     }
 
-    
+
     /**
      Invoke a command and some optional arguments.
      On success, returns the captured output from stdout.
@@ -80,7 +79,7 @@ class Builder {
         let handle = pipe.fileHandleForReading
         let errPipe = Pipe()
         let errHandle = errPipe.fileHandleForReading
-        
+
         let process = Process()
         process.launchPath = command
         process.arguments = arguments
@@ -132,7 +131,7 @@ class Builder {
 
         return decoded
     }
-    
+
     /**
      Announce the build stage.
     */
@@ -142,18 +141,18 @@ class Builder {
         }
         environment["BUILDER_STAGE"] = stage.lowercased()
     }
-    
+
     /**
      Execute the phases associated with a given scheme.
      */
-    
+
     func execute(scheme name: String, configuration : Configuration, settings : [String]) throws {
         guard let scheme = configuration.schemes[name] else {
             throw Failure.missingScheme(name: name)
         }
-        
+
         output.log("\nScheme:\n- \(name).")
-        
+
         for phase in scheme {
             setStage(phase.name)
             let tool = phase.tool
@@ -179,7 +178,7 @@ class Builder {
             }
         }
     }
-    
+
     /**
      Perform the build.
      */
@@ -206,13 +205,13 @@ class Builder {
         let json = try run(configurePath)
         output.log("- parsing output")
         let configuration = try parse(configuration: json)
-        
+
         let settings = configuration.compilerSettings()
         environment["BUILDER_SETTINGS"] = settings.joined(separator: ",")
 
         // execute the scheme associated with the primary command we were passed (run/build/test/etc)
         try execute(scheme: command, configuration: configuration, settings: settings)
-        
+
         output.log("\nDone.\n\n")
     }
 
