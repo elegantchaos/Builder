@@ -26,6 +26,7 @@ class Builder {
     let command : String
     let configuration : String
     var environment : [String:String] = ProcessInfo.processInfo.environment
+    lazy var swiftPath = findSwift()
     
     init(command : String = "build", configuration : String = "debug") {
         self.command = command
@@ -40,14 +41,15 @@ class Builder {
      Return the path to the swift binary.
      */
     
-    func swiftPath() -> String {
-        #if os(macOS)
-        let swift = "/usr/bin/swift" // should be discovered from the environment
-        #else
-        let swift = "/home/sam/Downloads/swift/usr/bin/swift" // NB clearly you need to change this to correspond to your setup, at the moment...
-        #endif
+    func findSwift() -> String {
+        let path : String
+        do {
+            path = try run("/usr/bin/which", arguments:["swift"]).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        } catch {
+            path = "/usr/bin/swift"
+        }
         
-        return swift
+        return path
     }
     
     
@@ -113,7 +115,7 @@ class Builder {
 
     func swift(_ command : String, arguments: [String] = []) throws -> String {
         verbose.log("running swift \(command)")
-        return try run(swiftPath(), arguments: [command] + arguments)
+        return try run(swiftPath, arguments: [command] + arguments)
     }
 
     /**
@@ -189,7 +191,7 @@ class Builder {
             let _ = try swift("build", arguments: ["--product", configurationTarget])
         } catch Failure.failed(let stdout, let stderr) {
             if stderr == "error: no product named \'\(configurationTarget)\'\n" {
-                exec(swiftPath(), arguments: Array(CommandLine.arguments[1...]))
+                exec(swiftPath, arguments: Array(CommandLine.arguments[1...]))
             } else {
                 throw Failure.failed(output: stdout, error: stderr)
             }
