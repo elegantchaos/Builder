@@ -10,7 +10,7 @@ let doc = """
 Build, test, and run SwiftPM packages.
 
 Usage:
-    builder [<command>] [--configuration <config>]
+    builder [<command>] [--configuration <config>] [--] [<other>...]
     builder (-h | --help)
 
 Arguments:
