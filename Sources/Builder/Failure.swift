@@ -11,6 +11,7 @@
 enum Failure : Error {
     case failed(output : String?, error : String?)
     case decodingFailed
-    case missingScheme(scheme : String)
+    case missingScheme(name : String)
+    case unknownOption(name : String)
 }
 

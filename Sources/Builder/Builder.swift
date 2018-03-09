@@ -5,7 +5,6 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 import Foundation
-import os
 
 /**
  Builder.
@@ -24,15 +23,51 @@ import os
 
 class Builder {
     let command : String
+    let configuration : String
     var environment : [String:String] = ProcessInfo.processInfo.environment
-    
-    init(command : String = "build") {
+    lazy var swiftPath = findSwift()
+
+    init(command : String = "build", configuration : String = "debug") {
         self.command = command
-        // TODO: flesh this out
-        self.environment["BUILDER_COMMAND"] = "build"
-        self.environment["BUILDER_CONFIGURATION"] = "debug" // TODO: read from the command line
+        self.configuration = configuration
+
+        // TODO: flesh the environment out with more useful stuff
+        self.environment["BUILDER_COMMAND"] = command
+        self.environment["BUILDER_CONFIGURATION"] = configuration
     }
-    
+
+    /**
+     Return the path to the swift binary.
+     */
+
+    func findSwift() -> String {
+        let path : String
+        do {
+            path = try run("/usr/bin/which", arguments:["swift"]).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        } catch {
+            path = "/usr/bin/swift"
+        }
+
+        return path
+    }
+
+
+    /**
+     Invoke a command and some optional arguments.
+     Control is transferred to the launched process, and this function doesn't return.
+     */
+
+    func exec(_ command : String, arguments: [String] = []) {
+        let process = Process()
+        process.launchPath = command
+        process.arguments = arguments
+        process.environment = self.environment
+        process.launch()
+        process.waitUntilExit()
+        exit(process.terminationStatus)
+    }
+
+
     /**
      Invoke a command and some optional arguments.
      On success, returns the captured output from stdout.
@@ -44,7 +79,7 @@ class Builder {
         let handle = pipe.fileHandleForReading
         let errPipe = Pipe()
         let errHandle = errPipe.fileHandleForReading
-        
+
         let process = Process()
         process.launchPath = command
         process.arguments = arguments
@@ -59,7 +94,7 @@ class Builder {
         let capturedOutput = String(data:data, encoding:String.Encoding.utf8)
         let status = process.terminationStatus
         if status != 0 {
-            output.log("\(command) failed \(status)")
+            verbose.log("\(command) failed \(status)")
             let errorOutput = String(data:errData, encoding:String.Encoding.utf8)
             throw Failure.failed(output: capturedOutput, error: errorOutput)
         }
@@ -78,15 +113,8 @@ class Builder {
      */
 
     func swift(_ command : String, arguments: [String] = []) throws -> String {
-
-        #if os(macOS)
-        let swift = "/usr/bin/swift" // should be discovered from the environment
-        #else
-        let swift = "/home/sam/Downloads/swift/usr/bin/swift"
-        #endif
-
         verbose.log("running swift \(command)")
-        return try run(swift, arguments: [command] + arguments)
+        return try run(swiftPath, arguments: [command] + arguments)
     }
 
     /**
@@ -103,40 +131,43 @@ class Builder {
 
         return decoded
     }
-    
+
     /**
      Announce the build stage.
     */
-    internal func setStage(_ stage : String) {
-        output.log("\n\(stage):")
+    internal func setStage(_ stage : String, announce : Bool = true) {
+        if announce {
+            output.log("\n\(stage):")
+        }
         environment["BUILDER_STAGE"] = stage.lowercased()
     }
-    
+
     /**
      Execute the phases associated with a given scheme.
      */
-    
+
     func execute(scheme name: String, configuration : Configuration, settings : [String]) throws {
         guard let scheme = configuration.schemes[name] else {
-            throw Failure.missingScheme(scheme: name)
+            throw Failure.missingScheme(name: name)
         }
-        
-        output.log("Scheme: \(command)")
+
+        output.log("\nScheme:\n- \(name).")
+
         for phase in scheme {
             setStage(phase.name)
             let tool = phase.tool
             switch (tool) {
             case "test":
                 let product = phase.arguments[0]
-                let toolOutput = try swift("test", arguments: settings)
+                let toolOutput = try swift("test", arguments: ["--configuration", self.configuration] + settings)
                 output.log("- tested \(product).\n\n\(toolOutput)")
             case "run":
                 let product = phase.arguments[0]
-                let toolOutput = try swift("run", arguments: [product] + settings)
+                let toolOutput = try swift("run", arguments: [product, "--configuration", self.configuration] + settings)
                 output.log("- ran \(product).\n\n\(toolOutput)")
             case "build":
                 let product = phase.arguments[0]
-                let _ = try swift("build", arguments: ["--product", product] + settings)
+                let _ = try swift("build", arguments: ["--product", product, "--configuration", self.configuration] + settings)
                 output.log("- built \(product).")
             case "scheme":
                 let scheme = phase.arguments[0]
@@ -147,29 +178,40 @@ class Builder {
             }
         }
     }
-    
+
     /**
      Perform the build.
      */
 
-    func build(configurationTarget : String) throws {
+    func execute(configurationTarget : String) throws {
         // try to build the Configure target
-        setStage("Configure")
-        let _ = try swift("build", arguments: ["--product", configurationTarget])
+        setStage("Configuring", announce: false)
+        do {
+            let _ = try swift("build", arguments: ["--product", configurationTarget])
+        } catch Failure.failed(let stdout, let stderr) {
+            if stderr == "error: no product named \'\(configurationTarget)\'\n" {
+                exec(swiftPath, arguments: Array(CommandLine.arguments[1...]))
+            } else {
+                throw Failure.failed(output: stdout, error: stderr)
+            }
+        }
 
         // if we built it, run it, and parse its output as a JSON configuration
         // (we don't use `swift run` here as we don't want to capture any of its output)
+        setStage("Configuring")
         let binPath = try swift("build", arguments: ["--product", configurationTarget, "--show-bin-path"])
+        output.log("- running config")
         let configurePath = URL(fileURLWithPath:binPath.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)).appendingPathComponent(configurationTarget).path
         let json = try run(configurePath)
+        output.log("- parsing output")
         let configuration = try parse(configuration: json)
-        
+
         let settings = configuration.compilerSettings()
         environment["BUILDER_SETTINGS"] = settings.joined(separator: ",")
 
         // execute the scheme associated with the primary command we were passed (run/build/test/etc)
         try execute(scheme: command, configuration: configuration, settings: settings)
-        
+
         output.log("\nDone.\n\n")
     }
 
