@@ -12,12 +12,23 @@ struct Inheritance : Decodable {
     let configuration : String?
 }
 
-struct SettingSpec : Decodable {
+struct Settings : Decodable {
     let common : SettingList?
     let c : SettingList?
-    let cplus : SettingList?
+    let cpp : SettingList?
     let swift : SettingList?
+    let linker : SettingList?
     let inherits : [Inheritance]?
+    
+    func compilerSettings() -> [String] {
+        var args : [String] = []
+        swift?.forEach({ args.append(contentsOf: ["-Xswiftc", "-\($0)"])})
+        c?.forEach({ args.append(contentsOf: ["-Xc", "-\($0)"])})
+        cpp?.forEach({ args.append(contentsOf: ["-Xcpp", "-\($0)"])})
+        linker?.forEach({ args.append(contentsOf: ["-Xlinker", "-\($0)"])})
+        return args
+    }
+
 }
 /**
  Data structure representing a phase of the build process.
@@ -49,7 +60,7 @@ struct Phase : Decodable {
  */
 
 struct Configuration : Decodable {
-    let settings : [String:SettingSpec]
+    let settings : [String:Settings]
     let schemes : [String:[Phase]]
     
     func compilerSettings() -> [String] {

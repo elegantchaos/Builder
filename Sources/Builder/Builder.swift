@@ -5,6 +5,7 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 import Foundation
+import Logger
 
 /**
  Builder.
@@ -21,15 +22,20 @@ import Foundation
 
  */
 
-class Builder {
+public class Builder {
     let command : String
     let configuration : String
+    let output : Logger
+    let verbose : Logger
     var environment : [String:String] = ProcessInfo.processInfo.environment
+
     lazy var swiftPath = findSwift()
 
-    init(command : String = "build", configuration : String = "debug") {
+    public init(command : String = "build", configuration : String = "debug", output: Logger, verbose: Logger) {
         self.command = command
         self.configuration = configuration
+        self.output = output
+        self.verbose = verbose
 
         // TODO: flesh the environment out with more useful stuff
         self.environment["BUILDER_COMMAND"] = command
@@ -183,7 +189,7 @@ class Builder {
      Perform the build.
      */
 
-    func execute(configurationTarget : String) throws {
+    public func execute(configurationTarget : String) throws {
         // try to build the Configure target
         setStage("Configuring", announce: false)
         do {

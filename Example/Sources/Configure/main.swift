@@ -10,7 +10,7 @@ let settings : [String:Any] = [
     "common" :    [
         "common" : [],
         "c" : [],
-        "cplus" : [],
+        "cpp" : [],
         "swift" : [],
         "inherits" : [
             ["name": "macOS", "platform" : "macOS"],

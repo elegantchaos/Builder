@@ -5,6 +5,7 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 import Logger
+import Builder
 
 let doc = """
 Build, test, and run SwiftPM packages.
@@ -40,7 +41,7 @@ let command = args.argument("command", default: "build")
 
 do {
     let configuration = try args.option("configuration")
-    let builder = Builder(command: command, configuration: configuration)
+    let builder = Builder(command: command, configuration: configuration, output: output, verbose: verbose)
     try builder.execute(configurationTarget: "Configure")
 
 } catch Failure.decodingFailed {
@@ -59,5 +60,3 @@ do {
 } catch {
     output.log("Failed: \(error)")
 }
-
-
