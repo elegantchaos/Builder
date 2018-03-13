@@ -4,6 +4,21 @@
 // For licensing terms, see http://elegantchaos.com/license/liberal/.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+typealias SettingList = [String]
+
+struct Inheritance : Decodable {
+    let name : String
+    let platform : String?
+    let configuration : String?
+}
+
+struct SettingSpec : Decodable {
+    let common : SettingList?
+    let c : SettingList?
+    let cplus : SettingList?
+    let swift : SettingList?
+    let inherits : [Inheritance]?
+}
 /**
  Data structure representing a phase of the build process.
  
@@ -34,7 +49,7 @@ struct Phase : Decodable {
  */
 
 struct Configuration : Decodable {
-    let settings : [String:String]
+    let settings : [String:SettingSpec]
     let schemes : [String:[Phase]]
     
     func compilerSettings() -> [String] {

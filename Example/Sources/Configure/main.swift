@@ -8,10 +8,10 @@ import BuilderBasicConfigure
 
 let settings : [String:Any] = [
     "common" :    [
-        "common" : [:],
-        "c" : [:],
-        "c++" : [:],
-        "swift" : [:],
+        "common" : [],
+        "c" : [],
+        "cplus" : [],
+        "swift" : [],
         "inherits" : [
             ["name": "macOS", "platform" : "macOS"],
             ["name": "debug", "configuration" : "debug"]
@@ -19,7 +19,7 @@ let settings : [String:Any] = [
     ],
     "mac" :    [
         "swift" : [
-            ["target", "x86_64-apple-macosx10.12"]
+            "target", "x86_64-apple-macosx10.12"
         ]
     ],
     "debug" : [
