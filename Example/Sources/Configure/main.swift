@@ -6,11 +6,28 @@
 
 import BuilderBasicConfigure
 
-#if os(macOS)
-let settings = ["target" : "x86_64-apple-macosx10.12"]
-#else
-let settings : [String:String] = [:]
-#endif
+let settings : [String:Any] = [
+    "common" :    [
+        "common" : [:],
+        "c" : [:],
+        "c++" : [:],
+        "swift" : [:],
+        "inherits" : [
+            ["name": "macOS", "platform" : "macOS"],
+            ["name": "debug", "configuration" : "debug"]
+        ]
+    ],
+    "mac" :    [
+        "swift" : [
+            ["target", "x86_64-apple-macosx10.12"]
+        ]
+    ],
+    "debug" : [
+        "swift" : [
+            "Onone"
+        ]
+    ]
+]
 
 let configuration : [String:Any] = [
     "settings" : settings,
@@ -51,7 +68,7 @@ let configuration : [String:Any] = [
                 "arguments":["Example"]
             ],
         ]
-
+        
     ]
 ]
 
