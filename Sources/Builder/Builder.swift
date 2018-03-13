@@ -211,8 +211,8 @@ public class Builder {
         let json = try run(configurePath)
         output.log("- parsing output")
         let configuration = try parse(configuration: json)
-
-        let settings = configuration.compilerSettings()
+        let configSettings = try configuration.resolve(for: command, configuration: self.configuration, platform: "macOS")
+        let settings = configSettings.compilerSettings()
         environment["BUILDER_SETTINGS"] = settings.joined(separator: ",")
 
         // execute the scheme associated with the primary command we were passed (run/build/test/etc)

@@ -127,7 +127,36 @@ class BuilderTests: XCTestCase {
         let compiler = settings.compilerSettings()
         XCTAssertEqual(compiler, ["-Xswiftc", "-testSwift", "-Xc", "-testC", "-Xcpp", "-testCpp", "-Xlinker", "-testLinker"])
     }
-    
+
+    func testPlatformOverrides() throws {
+        let platformOverrideJSON = """
+            {
+                "settings" : {
+                    "common" : {
+                        "inherits" : [{ "name" : "extraMacSettings", "platform" : "macOS" }],
+                        "swift" : ["testSwift"],
+                    },
+                    "extraMacSettings" : {
+                      "swift" : ["extraMacOnly"],
+                    }
+                },
+                "schemes" : {
+                    "scheme1" : [ {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]} ],
+                }
+            }
+            """
+        
+        guard let data = platformOverrideJSON.data(using: String.Encoding.utf8) else {
+            throw Failure.decodingFailed
+        }
+        
+        let decoder = JSONDecoder()
+        let configuration = try decoder.decode(Configuration.self, from: data)
+        let settings = try configuration.resolve(for: "scheme1", configuration: "debug", platform:"macOS")
+        let compiler = settings.compilerSettings()
+        XCTAssertEqual(compiler, ["-Xswiftc", "-testSwift", "-Xswiftc", "-extraMacOnly"])
+    }
+
     func testSchemes() throws {
         let simpleSchemesJSON = """
             {

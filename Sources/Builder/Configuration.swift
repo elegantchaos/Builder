@@ -28,8 +28,34 @@ struct Settings : Decodable {
         linker?.forEach({ args.append(contentsOf: ["-Xlinker", "-\($0)"])})
         return args
     }
-
+    
+    static func mergedLists(_ l1 : SettingList?, _ l2 : SettingList?) -> SettingList {
+        if l1 == nil {
+            if l2 == nil {
+                return []
+            } else {
+                return l2!
+            }
+        } else {
+            if l2 == nil {
+                return l1!
+            } else {
+                return l1! + l2!
+            }
+        }
+    }
+    
+    static func mergedSettings(_ s1 : Settings, _ s2 : Settings) -> Settings {
+        return Settings(
+            common: mergedLists(s1.common, s2.common),
+            c: mergedLists(s1.c, s2.c),
+            cpp: mergedLists(s1.cpp, s2.cpp),
+            swift: mergedLists(s1.swift, s2.swift),
+            linker: mergedLists(s1.linker, s2.linker),
+            inherits: nil)
+    }
 }
+
 /**
  Data structure representing a phase of the build process.
  
@@ -63,12 +89,29 @@ struct Configuration : Decodable {
     let settings : [String:Settings]
     let schemes : [String:[Phase]]
     
-    func compilerSettings() -> [String] {
-        var args : [String] = []
-        settings.forEach({ (key, value) in
-            args.append(contentsOf: ["-Xswiftc", "-\(key)", "-Xswiftc", "\(value)"])
-        })
-        return args
+    public func resolve(for scheme : String, configuration : String, platform : String) throws -> Settings {
+        var base = self.settings[scheme]
+        if base == nil {
+            base = self.settings["common"]
+        }
+        guard var settings = base else {
+            throw Failure.unknownOption(name: scheme)
+            
+        }
+        
+        if let inherited = settings.inherits {
+            for sub in inherited {
+                let configsMatch = (sub.configuration == nil || sub.configuration == configuration)
+                let platformsMatch = (sub.platform == nil || sub.platform == platform)
+                if configsMatch && platformsMatch {
+                    guard let subSettings = self.settings[sub.name] else {
+                        throw Failure.unknownOption(name: sub.name)
+                    }
+                    settings = Settings.mergedSettings(settings, subSettings)
+                }
+            }
+            
+        }
+        return settings
     }
-    
 }
