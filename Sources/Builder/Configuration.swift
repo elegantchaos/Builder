@@ -89,29 +89,37 @@ struct Configuration : Decodable {
     let settings : [String:Settings]
     let schemes : [String:[Phase]]
     
+    func applyInheritance(to settings : Settings, configuration : String, platform : String) throws -> Settings {
+        guard let inherited = settings.inherits else {
+            return settings
+        }
+        
+        var merged = settings
+        for sub in inherited {
+            let configsMatch = (sub.configuration == nil || sub.configuration == configuration)
+            let platformsMatch = (sub.platform == nil || sub.platform == platform)
+            if configsMatch && platformsMatch {
+                guard let subSettings = self.settings[sub.name] else {
+                    throw Failure.unknownOption(name: sub.name)
+                }
+                let subWithInheritance = try applyInheritance(to: subSettings, configuration: configuration, platform: platform)
+                merged = Settings.mergedSettings(merged, subWithInheritance)
+            }
+        }
+        
+        return merged
+    }
+    
     public func resolve(for scheme : String, configuration : String, platform : String) throws -> Settings {
         var base = self.settings[scheme]
         if base == nil {
             base = self.settings["common"]
         }
-        guard var settings = base else {
+        guard let settings = base else {
             throw Failure.unknownOption(name: scheme)
             
         }
         
-        if let inherited = settings.inherits {
-            for sub in inherited {
-                let configsMatch = (sub.configuration == nil || sub.configuration == configuration)
-                let platformsMatch = (sub.platform == nil || sub.platform == platform)
-                if configsMatch && platformsMatch {
-                    guard let subSettings = self.settings[sub.name] else {
-                        throw Failure.unknownOption(name: sub.name)
-                    }
-                    settings = Settings.mergedSettings(settings, subSettings)
-                }
-            }
-            
-        }
-        return settings
+        return try applyInheritance(to: settings, configuration: configuration, platform: platform)
     }
 }

@@ -8,104 +8,24 @@ import XCTest
 @testable import Builder
 
 
-
-let json = """
-
-{
-  "settings" : {
-    "mac" : {
-      "swift" : [
-        "target",
-        "x86_64-apple-macosx10.12"
-      ]
-    },
-    "debug" : {
-      "swift" : [
-        "Onone"
-      ]
-    },
-    "common" : {
-      "inherits" : [
-        {
-          "name" : "macOS",
-          "platform" : "macOS"
-        },
-        {
-          "name" : "debug",
-          "configuration" : "debug"
-        }
-      ],
-      "cpp" : [
-
-      ],
-      "swift" : [
-
-      ],
-      "common" : [
-
-      ],
-      "c" : [
-
-      ]
-    }
-  },
-  "schemes" : {
-    "test" : [
-      {
-        "tool" : "test",
-        "name" : "Testing",
-        "arguments" : [
-          "Example"
-        ]
-      }
-    ],
-    "build" : [
-      {
-        "tool" : "BuilderToolExample",
-        "name" : "Preparing",
-        "arguments" : [
-          ""
-        ]
-      },
-      {
-        "tool" : "build",
-        "name" : "Building",
-        "arguments" : [
-          "Example"
-        ]
-      },
-      {
-        "tool" : "BuilderToolExample",
-        "name" : "Packaging",
-        "arguments" : [
-          "blah",
-          "blah"
-        ]
-      }
-    ],
-    "run" : [
-      {
-        "tool" : "scheme",
-        "name" : "Building",
-        "arguments" : [
-          "build"
-        ]
-      },
-      {
-        "tool" : "run",
-        "name" : "Running",
-        "arguments" : [
-          "Example"
-        ]
-      }
-    ]
-  }
-}
-
-
-"""
-
 class BuilderTests: XCTestCase {
+    func testMergingSettingLists() {
+        XCTAssertEqual(Settings.mergedLists(nil, nil), [])
+        XCTAssertEqual(Settings.mergedLists(["blah"], nil), ["blah"])
+        XCTAssertEqual(Settings.mergedLists(nil, ["waffle"]), ["waffle"])
+        XCTAssertEqual(Settings.mergedLists(["blah"], ["waffle"]), ["blah", "waffle"])
+    }
+
+    func testMergingSettings() {
+        let s1 = Settings(common: nil, c: nil, cpp: nil, swift: nil, linker: nil, inherits: nil)
+        let s2 = Settings(common: ["test"], c: nil, cpp: nil, swift: nil, linker: nil, inherits: nil)
+
+        XCTAssertEqual(Settings.mergedSettings(s1, s1).common, [])
+        XCTAssertEqual(Settings.mergedSettings(s1, s2).common, ["test"])
+        XCTAssertEqual(Settings.mergedSettings(s2, s1).common, ["test"])
+        XCTAssertEqual(Settings.mergedSettings(s2, s2).common, ["test", "test"])
+    }
+
     func testCompilerSetting() throws {
         let compilerSettingsJSON = """
             {
@@ -152,9 +72,78 @@ class BuilderTests: XCTestCase {
         
         let decoder = JSONDecoder()
         let configuration = try decoder.decode(Configuration.self, from: data)
+
+        let macSettings = try configuration.resolve(for: "scheme1", configuration: "debug", platform:"macOS")
+        XCTAssertEqual(macSettings.compilerSettings(), ["-Xswiftc", "-testSwift", "-Xswiftc", "-extraMacOnly"])
+
+        let linuxSettings = try configuration.resolve(for: "scheme1", configuration: "debug", platform:"linux")
+        XCTAssertEqual(linuxSettings.compilerSettings(), ["-Xswiftc", "-testSwift"])
+
+    }
+
+    func testInheritanceChain() throws {
+        let chainJSON = """
+            {
+                "settings" : {
+                    "common" : {
+                        "inherits" : [{ "name" : "inherited1"}],
+                        "swift" : ["testSwift"],
+                    },
+                    "inherited1" : {
+                        "inherits" : [{ "name" : "inherited2"}],
+                      "swift" : ["extraInherited1"]
+                    },
+                    "inherited2" : {
+                      "swift" : ["extraInherited2"],
+                    }
+                },
+                "schemes" : {
+                    "scheme1" : [ {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]} ],
+                }
+            }
+            """
+        
+        guard let data = chainJSON.data(using: String.Encoding.utf8) else {
+            throw Failure.decodingFailed
+        }
+        
+        let decoder = JSONDecoder()
+        let configuration = try decoder.decode(Configuration.self, from: data)
+
         let settings = try configuration.resolve(for: "scheme1", configuration: "debug", platform:"macOS")
-        let compiler = settings.compilerSettings()
-        XCTAssertEqual(compiler, ["-Xswiftc", "-testSwift", "-Xswiftc", "-extraMacOnly"])
+        XCTAssertEqual(settings.compilerSettings(), ["-Xswiftc", "-testSwift", "-Xswiftc", "-extraInherited1", "-Xswiftc", "-extraInherited2"])
+    }
+
+    func testConfigurationOverrides() throws {
+        let configurationOverrideJSON = """
+            {
+                "settings" : {
+                    "common" : {
+                        "inherits" : [{ "name" : "extraReleaseSettings", "configuration" : "release" }],
+                        "swift" : ["testSwift"],
+                    },
+                    "extraReleaseSettings" : {
+                      "swift" : ["extraReleaseOnly"],
+                    }
+                },
+                "schemes" : {
+                    "scheme1" : [ {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]} ],
+                }
+            }
+            """
+        
+        guard let data = configurationOverrideJSON.data(using: String.Encoding.utf8) else {
+            throw Failure.decodingFailed
+        }
+        
+        let decoder = JSONDecoder()
+        let configuration = try decoder.decode(Configuration.self, from: data)
+        
+        let debugSettings = try configuration.resolve(for: "scheme1", configuration: "debug", platform:"macOS")
+        XCTAssertEqual(debugSettings.compilerSettings(), ["-Xswiftc", "-testSwift"])
+        
+        let releaseSettings = try configuration.resolve(for: "scheme1", configuration: "release", platform:"macOS")
+        XCTAssertEqual(releaseSettings.compilerSettings(), ["-Xswiftc", "-testSwift", "-Xswiftc", "-extraReleaseOnly"])
     }
 
     func testSchemes() throws {
@@ -187,7 +176,12 @@ class BuilderTests: XCTestCase {
     }
 
     static var allTests = [
+        ("testMergingSettingLists", testMergingSettingLists),
+        ("testMergingSettings", testMergingSettings),
         ("testCompilerSetting", testCompilerSetting),
+        ("testPlatformOverrides", testPlatformOverrides),
+        ("testConfigurationOverrides", testConfigurationOverrides),
+        ("testInheritanceChain", testInheritanceChain),
         ("testSchemes", testSchemes),
     ]
 }
