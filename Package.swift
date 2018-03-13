@@ -6,8 +6,8 @@ import PackageDescription
 let package = Package(
     name: "Builder",
     products: [
-      .executable(name: "Builder", targets: ["BuilderCommand"]),
-      .library(name: "libBuilder", targets: ["Builder"])
+      .executable(name: "build", targets: ["BuilderCommand"]),
+      .library(name: "Builder", targets: ["Builder"])
     ],
     dependencies: [
         .package(url: "https://github.com/elegantchaos/Logger", from: "1.0.6"),
@@ -21,7 +21,8 @@ let package = Package(
             name: "Builder",
             dependencies: ["Docopt", "Logger"]),
         .testTarget(
-            name: "BuilderTests"
+            name: "BuilderTests",
+            dependencies: ["Builder"]
         )
     ]
 )
