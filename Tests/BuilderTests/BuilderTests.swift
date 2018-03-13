@@ -7,6 +7,8 @@
 import XCTest
 @testable import Builder
 
+
+
 let json = """
 
 {
@@ -104,18 +106,59 @@ let json = """
 """
 
 class BuilderTests: XCTestCase {
-    func testExample() throws {
-        guard let data = json.data(using: String.Encoding.utf8) else {
+    func testCompilerSetting() throws {
+        let compilerSettingsJSON = """
+            {
+              "cpp" : ["testCpp"],
+              "swift" : ["testSwift"],
+              "common" : ["testCommon"],
+              "c" : ["testC"],
+              "linker" : ["testLinker"]
+            }
+            """
+
+        guard let data = compilerSettingsJSON.data(using: String.Encoding.utf8) else {
             throw Failure.decodingFailed
         }
         
         let decoder = JSONDecoder()
-        let decoded = try decoder.decode(Configuration.self, from: data)
+        let settings = try decoder.decode(Settings.self, from: data)
+        
+        let compiler = settings.compilerSettings()
+        XCTAssertEqual(compiler, ["-Xswiftc", "-testSwift", "-Xc", "-testC", "-Xcpp", "-testCpp", "-Xlinker", "-testLinker"])
+    }
+    
+    func testSchemes() throws {
+        let simpleSchemesJSON = """
+            {
+                "settings" : { "common" : { } },
+                "schemes" : {
+                    "scheme1" : [
+                        {"tool" : "tool1", "name" : "test1", "arguments" : ["arg1"]},
+                        {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]}
+                    ],
+                    "scheme2" : [
+                        {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]}
+                    ]
+                }
+            }
+            """
 
-      print("test goes here")
+        guard let data = simpleSchemesJSON.data(using: String.Encoding.utf8) else {
+            throw Failure.decodingFailed
+        }
+        
+        let decoder = JSONDecoder()
+        let configuration = try decoder.decode(Configuration.self, from: data)
+        XCTAssertEqual(configuration.schemes.count, 2)
+        guard let scheme1 = configuration.schemes["scheme1"] else { XCTFail("missing scheme"); return }
+        XCTAssertEqual(scheme1.count, 2)
+        guard let scheme2 = configuration.schemes["scheme2"] else { XCTFail("missing scheme"); return }
+        XCTAssertEqual(scheme2.count, 1)
     }
 
     static var allTests = [
-        ("testExample", testExample),
+        ("testCompilerSetting", testCompilerSetting),
+        ("testSchemes", testSchemes),
     ]
 }
