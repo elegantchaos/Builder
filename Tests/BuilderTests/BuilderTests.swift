@@ -20,10 +20,10 @@ class BuilderTests: XCTestCase {
         let s1 = Settings(common: nil, c: nil, cpp: nil, swift: nil, linker: nil, inherits: nil)
         let s2 = Settings(common: ["test"], c: nil, cpp: nil, swift: nil, linker: nil, inherits: nil)
 
-        XCTAssertEqual(Settings.mergedSettings(s1, s1).common, [])
-        XCTAssertEqual(Settings.mergedSettings(s1, s2).common, ["test"])
-        XCTAssertEqual(Settings.mergedSettings(s2, s1).common, ["test"])
-        XCTAssertEqual(Settings.mergedSettings(s2, s2).common, ["test", "test"])
+        XCTAssertEqual(Settings.mergedSettings(s1, s1).common!, [])
+        XCTAssertEqual(Settings.mergedSettings(s1, s2).common!, ["test"])
+        XCTAssertEqual(Settings.mergedSettings(s2, s1).common!, ["test"])
+        XCTAssertEqual(Settings.mergedSettings(s2, s2).common!, ["test", "test"])
     }
 
     func testCompilerSetting() throws {
@@ -40,10 +40,10 @@ class BuilderTests: XCTestCase {
         guard let data = compilerSettingsJSON.data(using: String.Encoding.utf8) else {
             throw Failure.decodingFailed
         }
-        
+
         let decoder = JSONDecoder()
         let settings = try decoder.decode(Settings.self, from: data)
-        
+
         let compiler = settings.compilerSettings()
         XCTAssertEqual(compiler, ["-Xswiftc", "-testSwift", "-Xc", "-testC", "-Xcpp", "-testCpp", "-Xlinker", "-testLinker"])
     }
@@ -65,11 +65,11 @@ class BuilderTests: XCTestCase {
                 }
             }
             """
-        
+
         guard let data = platformOverrideJSON.data(using: String.Encoding.utf8) else {
             throw Failure.decodingFailed
         }
-        
+
         let decoder = JSONDecoder()
         let configuration = try decoder.decode(Configuration.self, from: data)
 
@@ -102,11 +102,11 @@ class BuilderTests: XCTestCase {
                 }
             }
             """
-        
+
         guard let data = chainJSON.data(using: String.Encoding.utf8) else {
             throw Failure.decodingFailed
         }
-        
+
         let decoder = JSONDecoder()
         let configuration = try decoder.decode(Configuration.self, from: data)
 
@@ -131,17 +131,17 @@ class BuilderTests: XCTestCase {
                 }
             }
             """
-        
+
         guard let data = configurationOverrideJSON.data(using: String.Encoding.utf8) else {
             throw Failure.decodingFailed
         }
-        
+
         let decoder = JSONDecoder()
         let configuration = try decoder.decode(Configuration.self, from: data)
-        
+
         let debugSettings = try configuration.resolve(for: "action1", configuration: "debug", platform:"macOS")
         XCTAssertEqual(debugSettings.compilerSettings(), ["-Xswiftc", "-testSwift"])
-        
+
         let releaseSettings = try configuration.resolve(for: "action1", configuration: "release", platform:"macOS")
         XCTAssertEqual(releaseSettings.compilerSettings(), ["-Xswiftc", "-testSwift", "-Xswiftc", "-extraReleaseOnly"])
     }
@@ -165,7 +165,7 @@ class BuilderTests: XCTestCase {
         guard let data = simpleSchemesJSON.data(using: String.Encoding.utf8) else {
             throw Failure.decodingFailed
         }
-        
+
         let decoder = JSONDecoder()
         let configuration = try decoder.decode(Configuration.self, from: data)
         XCTAssertEqual(configuration.actions.count, 2)
