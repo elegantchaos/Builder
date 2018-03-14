@@ -6,31 +6,28 @@
 
 import BuilderBasicConfigure
 
-let settings : [String:Any] = [
-    "common" :    [
-        "common" : [],
-        "c" : [],
-        "cpp" : [],
-        "swift" : [],
-        "inherits" : [
-            ["name": "mac", "platform" : "macOS"],
-            ["name": "debug", "configuration" : "debug"]
+let settings = Settings(schemes: [
+    .scheme(
+        name: "common",
+        swift: ["Dexample"],
+        inherits: [
+            .scheme(name: "mac", filter: ["macOS"]),
+            .scheme(name: "debug", filter: ["debug"])
         ]
-    ],
-    "mac" :    [
-        "swift" : [
-            "target", "x86_64-apple-macosx10.12"
-        ]
-    ],
-    "debug" : [
-        "swift" : [
-            "Onone"
-        ]
+    ),
+    .scheme(
+        name: "mac",
+        swift: ["target", "x86_64-apple-macosx10.12"]
+    ),
+    .scheme(
+        name: "debug",
+        swift: ["Onone"]
+    )
     ]
-]
+)
 
 let configuration : [String:Any] = [
-    "settings" : settings,
+    "settings" : settings.value,
     "schemes" : [
         "build" : [
             [
