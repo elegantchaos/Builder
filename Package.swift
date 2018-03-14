@@ -6,7 +6,7 @@ import PackageDescription
 let package = Package(
     name: "Builder",
     products: [
-      .executable(name: "build", targets: ["BuilderCommand"]),
+      .executable(name: "builder", targets: ["BuilderCommand"]),
       .library(name: "Builder", targets: ["Builder"])
     ],
     dependencies: [
