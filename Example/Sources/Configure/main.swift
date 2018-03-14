@@ -13,7 +13,7 @@ let settings : [String:Any] = [
         "cpp" : [],
         "swift" : [],
         "inherits" : [
-            ["name": "macOS", "platform" : "macOS"],
+            ["name": "mac", "platform" : "macOS"],
             ["name": "debug", "configuration" : "debug"]
         ]
     ],
@@ -68,7 +68,7 @@ let configuration : [String:Any] = [
                 "arguments":["Example"]
             ],
         ]
-        
+
     ]
 ]
 
