@@ -120,7 +120,7 @@ struct Configuration : Decodable {
     public func resolve(for scheme : String, configuration : String, platform : String) throws -> Settings {
         var base = self.settings[scheme]
         if base == nil {
-            base = self.settings["common"]
+            base = self.settings["«base»"]
         }
         guard let settings = base else {
             throw Failure.unknownOption(name: scheme)

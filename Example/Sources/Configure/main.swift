@@ -7,8 +7,7 @@
 import BuilderConfiguration
 
 let settings = Settings(schemes: [
-    .scheme(
-        name: "common",
+    .baseScheme(
         swift: ["Dexample"],
         inherits: [
             .scheme(name: "mac", filter: ["macOS"]),

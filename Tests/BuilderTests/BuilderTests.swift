@@ -52,7 +52,7 @@ class BuilderTests: XCTestCase {
         let platformOverrideJSON = """
             {
                 "settings" : {
-                    "common" : {
+                    "«base»" : {
                         "inherits" : [{ "name" : "extraMacSettings", "filter" : ["macOS"] }],
                         "swift" : ["testSwift"],
                     },
@@ -85,7 +85,7 @@ class BuilderTests: XCTestCase {
         let chainJSON = """
             {
                 "settings" : {
-                    "common" : {
+                    "«base»" : {
                         "inherits" : [{ "name" : "inherited1"}],
                         "swift" : ["testSwift"],
                     },
@@ -118,7 +118,7 @@ class BuilderTests: XCTestCase {
         let configurationOverrideJSON = """
             {
                 "settings" : {
-                    "common" : {
+                    "«base»" : {
                         "inherits" : [{ "name" : "extraReleaseSettings", "filter" : ["release"] }],
                         "swift" : ["testSwift"],
                     },
