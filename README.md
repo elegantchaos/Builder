@@ -26,7 +26,7 @@ To build & test Builder:
 ```
 swift package update
 cd Example
-swift run --package-path ../. --static-swift-stdlib -Xswiftc "-target" -Xswiftc "x86_64-apple-macosx10.12"
+swift run --package-path ../. --static-swift-stdlib
 .build/debug/Example
 ```
 
@@ -80,73 +80,72 @@ Of course, if you *do* have special requirements, such as tools that need to be 
 In this demo, the `Configure` target from the example project looks like this:
 
 ```swift
+
 import BuilderBasicConfigure
 
-#if os(macOS)
-let settings = ["target" : "x86_64-apple-macosx10.12"]
-#else
-let settings : [String:String] = [:]
-#endif
-
-let configuration : [String:Any] = [
-    "settings" : settings,
-    "schemes" : [
-        "build" : [
-            [
-                "name" : "Preparing",
-                "tool" : "BuilderToolExample",
-                "arguments":[""]
-            ],
-            [
-                "name" : "Building",
-                "tool" : "build",
-                "arguments":["Example"]
-            ],
-            [
-                "name" : "Packaging",
-                "tool":"BuilderToolExample",
-                "arguments":["blah", "blah"]
-            ]
-        ],
-        "test" : [
-            [
-                "name" : "Testing",
-                "tool" : "test",
-                "arguments":["Example"]
-            ],
-        ],
-        "run" : [
-            [
-                "name" : "Building",
-                "tool" : "scheme",
-                "arguments":["build"]
-            ],
-            [
-                "name" : "Running",
-                "tool" : "run",
-                "arguments":["Example"]
-            ],
+let settings = Settings(schemes: [
+    .scheme(
+        name: "common",
+        swift: ["Dexample"],
+        inherits: [
+            .scheme(name: "mac", filter: ["macOS"]),
+            .scheme(name: "debug", filter: ["debug"])
         ]
-
+    ),
+    .scheme(
+        name: "mac",
+        swift: ["target", "x86_64-apple-macosx10.12"]
+    ),
+    .scheme(
+        name: "debug",
+        swift: ["Onone"]
+    )
     ]
-]
+)
 
-let configure = BasicConfigure(dictionary: configuration)
-try configure.run()
+let configuration = Configuration(
+    settings: settings,
+    schemes: [
+        .scheme(name:"build", phases:[
+            .phase(name:"Preparing", tool: "BuilderToolExample", arguments:[]),
+            .phase(name:"Building", tool: "build", arguments:["Example"]),
+            .phase(name:"Packaging", tool: "BuilderToolExample", arguments:["blah", "waffle"]),
+            ]),
+        .scheme(name:"test", phases:[
+            .phase(name:"Testing", tool: "test", arguments:["Example"]),
+            ]),
+        .scheme(name:"run", phases:[
+            .phase(name:"Building", tool: "scheme", arguments:["build"]),
+            .phase(name:"Running", tool: "run", arguments:["Example"]),
+            ]),
+    ]
+)
+
+configuration.outputToBuilder()
 ```
 
-As a relatively simple example, it actually embeds the configuration as a dictionary inside itself, and uses the `BasicConfigure` class (defined in a different git repo, and listed as a dependency in the manifest for the `Example` package) to output it.
+The job of the `Configure` target is to output a JSON description of the configuration.
 
-This dictionary supplies some build settings, and states that the `BuilderToolExample` tool should be run before and after building the `Example` product.
+There are lots of ways to accomplish this goal: just writing code to print the JSON directly, making a dictionary and converting it to JSON then printing that, loading it as text from a file and printing that, etc.
 
-This `BuilderToolExample` tool is itself is another external dependency.
+In this example we make use of some utility code defined in the `BuilderBasicConfigure` module[^1], which lets us write `Settings` and `Configuration` definitions in a similar way to SwiftPM's Package descriptions.
 
-This code hopefully illustrates the fact that we can fetch, compile and run arbitrary tools as part of the overall build process.
+In the `Settings` part we supply a basic settings scheme which always adds a single Swift setting: `-Dexample`. We also define a couple of other settings schemes which are optionally mixed in, depending on filters. If the platform is `macOS`, we mix in a target setting. If the configuration is `debug` we mix in an optimiser setting.
 
-It also demonstrates that the configuration can be generated dynamically (by running code, including external dependencies) and therefore could change based on the environment it's run in.
+In the `Configuration` part we describe three build schemes: "build", "test" and "run". These list the build phases to execute when builder is invoked with the `build`, `test` or `run` actions[^2].
 
-In this case it just returns a *static* dictionary, albeit one who's contents are varied at compile time depending on the platform. In theory though the content could also be varied based on runtime values, fetched from the network, loaded from disk, etc.
+In the "build" phase, we see an example of calling out to an external tool: `BuilderToolExample`. This tool is itself another external dependency.
 
+
+Hopefully this example illustrates a few things:
+
+- the configuration can be generated dynamically (by running code, including external dependencies) and therefore could change based on the environment it's run in
+- the code that generates the configuration can make use of dependencies
+- we can also fetch, compile and run arbitrary tools as part of the overall build process
+
+[^1]: This module is an external dependency, defined in a different git repo, and listed in our manifest in the normal way.
+
+[^2]: These action names are actually arbitrary - we could call them anything we like. If `builder` fails to find a `Configure` target however, it will fall back to just calling `swift`, and will pass the action to it as a first parameter. For this reason, it makes sense to use names like "build" and "test" if they correspond to SwiftPM actions. 
 
 ## Flaws
 
