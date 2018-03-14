@@ -25,16 +25,14 @@ To see builder in action:
 ```
 git clone "https://github.com/elegantchaos/BuilderExample"
 cd BuilderExample
-swift run build
-.build/debug/Example
+swift run builder run
 ```
 
 What this does is clone the example, then build & run builder (which is a dependency).
 
-Running builder then builds the Example target.
+Running builder then builds and runs the Example target.
 
-Finally, we run the Example project.
-
+Wasn't that fun?
 
 ## Discussion
 
