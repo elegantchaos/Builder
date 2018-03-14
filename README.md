@@ -1,22 +1,26 @@
 # Builder
 
-The [Swift Package Manager](https://github.com/apple/swift-package-manager/tree/master/Documentation) is a capable package manager, but at the moment it's quite basic as a build system.
+The Builder executable built by this package is intended to be used _to build other Swift Package Manager packages_.
 
-It uses [llbuild](https://github.com/apple/swift-llbuild) under the hood, but currently it doesn't expose much beyond the ability to build/run/test a package.
+Please leave comments and suggestions on the [Swift forums](https://forums.swift.org/t/building-on-swift-build/10755/2), or as [issues in github](https://github.com/elegantchaos/Builder/issues).
+
+## Motivation
+
+The [Swift Package Manager](https://github.com/apple/swift-package-manager/tree/master/Documentation) is a capable package manager, but at the moment it's quite basic as a build system. It uses [llbuild](https://github.com/apple/swift-llbuild) under the hood, but currently it doesn't expose much beyond the ability to build/run/test a package.
 
 In particular, it currently doesn't support running scripts or other tools as part of the build, or have a way to specify configuration settings in bulk and apply them uniformly, other than specifying each one on the command line.
 
-This project is a very simple proof-of-concept implementation of a meta-build command for the Swift Package Manager, which illustrates one way that these features could be added. It was originally inspired by a couple of discussions in the Swift forums ([here](https://forums.swift.org/t/spm-static-dependencies/10152/35?u=samdeane) and [here](https://forums.swift.org/t/support-of-spm-scripts/10288)).
+This project is a proof-of-concept implementation of a meta-builder for the Swift Package Manager. It illustrates one way that settings configuration and custom build phases could be added.
 
-The Builder executable built by this package is intended to be used _to build other Swift Package Manager packages_.
+It was originally inspired by a couple of discussions in the Swift forums ([here](https://forums.swift.org/t/spm-static-dependencies/10152/35?u=samdeane) and [here](https://forums.swift.org/t/support-of-spm-scripts/10288)), but has grown legs a bit since then.
 
-The approach taken was deliberately chosen to work with the _current_ abilities of SwiftPM, so that the prototype could be a standalone tool that sits _on top of_ SwiftPM and uses it.
+The approach taken was deliberately chosen to work with the _current_ abilities of SwiftPM, so that  this could be a standalone tool that sits _on top of_ SwiftPM and uses it. This also means that you can bootstrap the build process by using SwiftPM to build this tool.
 
-A real implementation could be integrated into SwiftPM itself, or could continue as a layer on top of it. The main advantage of integration is just that there's no extra tool to have to install.
+Since I created this project, the Swift team have [announced their own solution for extensible build tools](https://forums.swift.org/t/package-manager-extensible-build-tools/10900/10), which will probably make this tool obsolete once it exists.
 
-Please leave comments and suggestions on the Swift forums, or as [issues in github](https://github.com/elegantchaos/Builder/issues).
+In the meantime though, it's an interesting experiment, and still has some other capabilities that are currently missing from SwiftPM.
 
-### Example
+## Example
 
 An example package can be found at [BuilderExample](https://github.com/elegantchaos/BuilderExample).
 
