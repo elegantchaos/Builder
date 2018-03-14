@@ -26,48 +26,22 @@ let settings = Settings(schemes: [
     ]
 )
 
-let configuration : [String:Any] = [
-    "settings" : settings.value,
-    "schemes" : [
-        "build" : [
-            [
-                "name" : "Preparing",
-                "tool" : "BuilderToolExample",
-                "arguments":[""]
-            ],
-            [
-                "name" : "Building",
-                "tool" : "build",
-                "arguments":["Example"]
-            ],
-            [
-                "name" : "Packaging",
-                "tool":"BuilderToolExample",
-                "arguments":["blah", "blah"]
-            ]
-        ],
-        "test" : [
-            [
-                "name" : "Testing",
-                "tool" : "test",
-                "arguments":["Example"]
-            ],
-        ],
-        "run" : [
-            [
-                "name" : "Building",
-                "tool" : "scheme",
-                "arguments":["build"]
-            ],
-            [
-                "name" : "Running",
-                "tool" : "run",
-                "arguments":["Example"]
-            ],
-        ]
-
+let configuration = Configuration(
+    settings: settings,
+    schemes: [
+        .scheme(name:"build", phases:[
+            .phase(name:"Preparing", tool: "BuilderToolExample", arguments:[]),
+            .phase(name:"Building", tool: "build", arguments:["Example"]),
+            .phase(name:"Packaging", tool: "BuilderToolExample", arguments:["blah", "waffle"]),
+            ]),
+        .scheme(name:"test", phases:[
+            .phase(name:"Testing", tool: "test", arguments:["Example"]),
+            ]),
+        .scheme(name:"run", phases:[
+            .phase(name:"Building", tool: "scheme", arguments:["build"]),
+            .phase(name:"Running", tool: "run", arguments:["Example"]),
+            ]),
     ]
-]
+)
 
-let configure = BasicConfigure(dictionary: configuration)
-try configure.run()
+configuration.outputToBuilder()
