@@ -40,25 +40,24 @@ Wasn't that fun?
 
 ## Discussion
 
-Builder is invoked as follows: `builder <scheme>`. If not supplied, scheme defaults to `build` (more on schemes later).
+Builder is invoked as follows: `builder <action>`. If not supplied, action defaults to `build` (more on actions later).
 
-Builder works by looking for a special target called `Configure` in the package that it's trying to build (defined in the `Package.swift` file).
+Builder works by looking for a special target called `Configure` in the package that it's trying to build. You define this target in the `Package.swift` file just like any other target. It should contain a `main.swift` file, so that builder can run it.
 
-If it finds this target, it uses `swift build` and/or `swift run` to do the following:
+Assuming that it finds the `Configure` target, builder uses `swift run` to build and run it, and capture its output.
 
-- build the Configure target
-- run the resulting executable and capture its output
-- parse this output to obtain a configuration to use to build the actual package
-- extract compiler and linker settings from the configuration
+All being well, this output should be a valid JSON dictionary, which builder parses to obtain a configuration.
 
-It then looks in the configuration for a scheme matching the name that was supplied on the command line (or `build` if none was supplied). If present, this scheme describes a set of commands to execute in order to perform the scheme.
+This configuration consists of a settings section, and one or more action definitions.
+
+Builder looks for an action definition matching the name that was supplied on the command line (or `build` if none was supplied). If present, this action definition describes a set of commands to execute in order to perform the action.
 
 These commands can consist of:
 
 - build: build a product, `swift build`, applying the build settings from the configuration
 - test: test a product using `swift test`, applying the build settings from the configuration
 - run: run a product using `swift run`, applying the build settings from the configuration
-- scheme: perform another nested scheme
+- action: perform another nested action
 - *anything else*: treat the named command as a dependency; build and run it with `swift run`, passing the arguments specified in the configuration
 
 The idea behind this approach is that:
@@ -68,15 +67,13 @@ The idea behind this approach is that:
 - any tools required for custom build steps can also be listed in the manifest as dependencies
 - although the data format output by the configuration tool needs to be fixed, the actual implementation of it is decoupled from Swift itself, making it easier to support multiple different systems
 
-If this functionality was built into `swift`, then for many cases it would be sufficient to completely define not only the package but how to build it.
+By adding Builder as a configuration to a project, the entire chain of build dependencies, including Builder itself and additional tools (such as `protobuf`), can be fetched and built locally by the package manager itself.
 
-The entire chain of build dependencies, including additional tools (such as `protobuf`), can be fetched and built locally by the package manager itself.
+This is intended to result in a stable build environment, which doesn't rely on having to pre-install tools globally.
 
-This is intended to encourage, as much as possible, people to stay platform-neutral within the Swift ecosystem.
+It also makes it simple for people to share re-usable build tools, since they're just Swift packages - hopefully this will encourage people to write cross-platform Swift tools (or wrap other tools in Swift), and result in a range of off-the-shelf packages to suit most needs.
 
-It also makes it simple for people to share re-usable build tools, since they're just Swift packages - hopefully this would result in a range of tools to suit most needs, so the requirement to actually write bespoke code would be minimal.
-
-Of course, if you *do* have special requirements, such as tools that need to be installed or run with `brew`/`apt-get`/`npm`/`whatever`, then that's no problem either. Since you can now build and run arbitrary executables as part of the build process, you can use one to do anything that you need to.
+Of course, if you *do* have special requirements, such as tools that need to be installed or run with `brew`/`apt-get`/`npm`/`whatever`, then that's no problem either. You just build a Swift tool to perform the install, and do anything that you need to.
 
 ## Dynamic Configuration
 
@@ -131,7 +128,7 @@ The job of the `Configure` target is to output a JSON description of the configu
 
 There are lots of ways to accomplish this goal: just writing code to print the JSON directly, making a dictionary and converting it to JSON then printing that, loading it as text from a file and printing that, etc.
 
-In this example we make use of some utility code defined in the `BuilderBasicConfigure` module[^1], which lets us write `Settings` and `Configuration` definitions in a similar way to SwiftPM's Package descriptions.
+In this example we make use of some utility code defined in the `BuilderConfiguration` module[^1], which lets us write `Settings` and `Configuration` definitions in a similar way to SwiftPM's Package descriptions.
 
 In the `Settings` part we supply a basic settings scheme which always adds a single Swift setting: `-Dexample`. We also define a couple of other settings schemes which are optionally mixed in, depending on filters. If the platform is `macOS`, we mix in a target setting. If the configuration is `debug` we mix in an optimiser setting.
 
@@ -217,7 +214,7 @@ What we really need is to be able to hook into SwiftPM's own use of `llbuild` at
 
 The fact that we can't do that is not ideal - but it is part of the reason why this tool exists in the first place :grin:.
 
-
+*Update:* the [Swift team's extensible build tools proposal](https://forums.swift.org/t/package-manager-extensible-build-tools/10900/10) aims to address this problem for SwiftPM itself.
 
 
 ## Ideas And Improvements
