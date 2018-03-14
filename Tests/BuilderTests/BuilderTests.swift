@@ -60,8 +60,8 @@ class BuilderTests: XCTestCase {
                       "swift" : ["extraMacOnly"],
                     }
                 },
-                "schemes" : {
-                    "scheme1" : [ {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]} ],
+                "actions" : {
+                    "action1" : [ {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]} ],
                 }
             }
             """
@@ -73,10 +73,10 @@ class BuilderTests: XCTestCase {
         let decoder = JSONDecoder()
         let configuration = try decoder.decode(Configuration.self, from: data)
 
-        let macSettings = try configuration.resolve(for: "scheme1", configuration: "debug", platform:"macOS")
+        let macSettings = try configuration.resolve(for: "action1", configuration: "debug", platform:"macOS")
         XCTAssertEqual(macSettings.compilerSettings(), ["-Xswiftc", "-testSwift", "-Xswiftc", "-extraMacOnly"])
 
-        let linuxSettings = try configuration.resolve(for: "scheme1", configuration: "debug", platform:"linux")
+        let linuxSettings = try configuration.resolve(for: "action1", configuration: "debug", platform:"linux")
         XCTAssertEqual(linuxSettings.compilerSettings(), ["-Xswiftc", "-testSwift"])
 
     }
@@ -97,8 +97,8 @@ class BuilderTests: XCTestCase {
                       "swift" : ["extraInherited2"],
                     }
                 },
-                "schemes" : {
-                    "scheme1" : [ {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]} ],
+                "actions" : {
+                    "action1" : [ {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]} ],
                 }
             }
             """
@@ -110,7 +110,7 @@ class BuilderTests: XCTestCase {
         let decoder = JSONDecoder()
         let configuration = try decoder.decode(Configuration.self, from: data)
 
-        let settings = try configuration.resolve(for: "scheme1", configuration: "debug", platform:"macOS")
+        let settings = try configuration.resolve(for: "action1", configuration: "debug", platform:"macOS")
         XCTAssertEqual(settings.compilerSettings(), ["-Xswiftc", "-testSwift", "-Xswiftc", "-extraInherited1", "-Xswiftc", "-extraInherited2"])
     }
 
@@ -126,8 +126,8 @@ class BuilderTests: XCTestCase {
                       "swift" : ["extraReleaseOnly"],
                     }
                 },
-                "schemes" : {
-                    "scheme1" : [ {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]} ],
+                "actions" : {
+                    "action1" : [ {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]} ],
                 }
             }
             """
@@ -139,10 +139,10 @@ class BuilderTests: XCTestCase {
         let decoder = JSONDecoder()
         let configuration = try decoder.decode(Configuration.self, from: data)
         
-        let debugSettings = try configuration.resolve(for: "scheme1", configuration: "debug", platform:"macOS")
+        let debugSettings = try configuration.resolve(for: "action1", configuration: "debug", platform:"macOS")
         XCTAssertEqual(debugSettings.compilerSettings(), ["-Xswiftc", "-testSwift"])
         
-        let releaseSettings = try configuration.resolve(for: "scheme1", configuration: "release", platform:"macOS")
+        let releaseSettings = try configuration.resolve(for: "action1", configuration: "release", platform:"macOS")
         XCTAssertEqual(releaseSettings.compilerSettings(), ["-Xswiftc", "-testSwift", "-Xswiftc", "-extraReleaseOnly"])
     }
 
@@ -150,12 +150,12 @@ class BuilderTests: XCTestCase {
         let simpleSchemesJSON = """
             {
                 "settings" : { "common" : { } },
-                "schemes" : {
-                    "scheme1" : [
+                "actions" : {
+                    "action1" : [
                         {"tool" : "tool1", "name" : "test1", "arguments" : ["arg1"]},
                         {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]}
                     ],
-                    "scheme2" : [
+                    "action2" : [
                         {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]}
                     ]
                 }
@@ -168,11 +168,11 @@ class BuilderTests: XCTestCase {
         
         let decoder = JSONDecoder()
         let configuration = try decoder.decode(Configuration.self, from: data)
-        XCTAssertEqual(configuration.schemes.count, 2)
-        guard let scheme1 = configuration.schemes["scheme1"] else { XCTFail("missing scheme"); return }
-        XCTAssertEqual(scheme1.count, 2)
-        guard let scheme2 = configuration.schemes["scheme2"] else { XCTFail("missing scheme"); return }
-        XCTAssertEqual(scheme2.count, 1)
+        XCTAssertEqual(configuration.actions.count, 2)
+        guard let action1 = configuration.actions["action1"] else { XCTFail("missing scheme"); return }
+        XCTAssertEqual(action1.count, 2)
+        guard let action2 = configuration.actions["action2"] else { XCTFail("missing scheme"); return }
+        XCTAssertEqual(action2.count, 1)
     }
 
     static var allTests = [

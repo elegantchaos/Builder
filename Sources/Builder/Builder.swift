@@ -149,17 +149,17 @@ public class Builder {
     }
 
     /**
-     Execute the phases associated with a given scheme.
+     Execute the phases associated with a given action.
      */
 
-    func execute(scheme name: String, configuration : Configuration, settings : [String]) throws {
-        guard let scheme = configuration.schemes[name] else {
+    func execute(action name: String, configuration : Configuration, settings : [String]) throws {
+        guard let action = configuration.actions[name] else {
             throw Failure.missingScheme(name: name)
         }
 
         output.log("\nScheme:\n- \(name).")
 
-        for phase in scheme {
+        for phase in action {
             setStage(phase.name)
             let tool = phase.tool
             switch (tool) {
@@ -175,9 +175,9 @@ public class Builder {
                 let product = phase.arguments[0]
                 let _ = try swift("build", arguments: ["--product", product, "--configuration", self.configuration] + settings)
                 output.log("- built \(product).")
-            case "scheme":
-                let scheme = phase.arguments[0]
-                try execute(scheme: scheme, configuration: configuration, settings: settings)
+            case "action":
+                let action = phase.arguments[0]
+                try execute(action: action, configuration: configuration, settings: settings)
             default:
                 let toolOutput = try swift("run", arguments: [tool] + phase.arguments)
                 output.log("- ran \(tool): \(toolOutput)")
@@ -215,8 +215,8 @@ public class Builder {
         let settings = configSettings.compilerSettings()
         environment["BUILDER_SETTINGS"] = settings.joined(separator: ",")
 
-        // execute the scheme associated with the primary command we were passed (run/build/test/etc)
-        try execute(scheme: command, configuration: configuration, settings: settings)
+        // execute the action associated with the primary command we were passed (run/build/test/etc)
+        try execute(action: command, configuration: configuration, settings: settings)
 
         output.log("\nDone.\n\n")
     }

@@ -86,7 +86,7 @@ struct Phase : Decodable {
 
 struct Configuration : Decodable {
     let settings : [String:Settings]
-    let schemes : [String:[Phase]]
+    let actions : [String:[Phase]]
     
     func applyInheritance(to settings : Settings, filter : [String]) throws -> Settings {
         guard let inherited = settings.inherits else {
