@@ -10,29 +10,30 @@ This project is a very simple proof-of-concept implementation of a meta-build co
 
 The Builder executable built by this package is intended to be used _to build other Swift Package Manager packages_.
 
-An example package is provided (in the `Example/` folder), which you can run Builder on.
-
 The approach taken was deliberately chosen to work with the _current_ abilities of SwiftPM, so that the prototype could be a standalone tool that sits _on top of_ SwiftPM and uses it.
 
 A real implementation could be integrated into SwiftPM itself, or could continue as a layer on top of it. The main advantage of integration is just that there's no extra tool to have to install.
 
 Please leave comments and suggestions on the Swift forums, or as [issues in github](https://github.com/elegantchaos/Builder/issues).
 
+### Example
 
-### Instructions
+An example package can be found at [BuilderExample](https://github.com/elegantchaos/BuilderExample).
 
-To build & test Builder:
+To see builder in action:
 
 ```
-swift package update
-cd Example
-swift run --package-path ../. --static-swift-stdlib
+git clone "https://github.com/elegantchaos/BuilderExample"
+cd BuilderExample
+swift run build
 .build/debug/Example
 ```
 
-What this does is to build and run the Builder tool itself, which then builds the Example package.
+What this does is clone the example, then build & run builder (which is a dependency).
 
-Finally, the script runs the built example product.
+Running builder then builds the Example target.
+
+Finally, we run the Example project.
 
 
 ## Discussion

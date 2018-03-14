@@ -74,70 +74,70 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		22E5ADDF205827B1005071F7 /* PBXContainerItemProxy */ = {
+		225664A52059AC5200BE2D50 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = "Logger::Logger";
 			remoteInfo = Logger;
 		};
-		22E5ADE0205827B1005071F7 /* PBXContainerItemProxy */ = {
+		225664A62059AC5200BE2D50 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = "Docopt::Docopt";
 			remoteInfo = Docopt;
 		};
-		22E5ADE1205827B1005071F7 /* PBXContainerItemProxy */ = {
+		225664A72059AC5200BE2D50 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = "Builder::Builder";
 			remoteInfo = Builder;
 		};
-		22E5ADE2205827B1005071F7 /* PBXContainerItemProxy */ = {
+		225664A82059AC5200BE2D50 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = "Logger::Logger";
 			remoteInfo = Logger;
 		};
-		22E5ADE3205827B1005071F7 /* PBXContainerItemProxy */ = {
+		225664A92059AC5200BE2D50 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = "Docopt::Docopt";
 			remoteInfo = Docopt;
 		};
-		22E5ADE4205827B2005071F7 /* PBXContainerItemProxy */ = {
+		225664AA2059AC5200BE2D50 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = "Builder::Builder";
 			remoteInfo = Builder;
 		};
-		22E5ADE5205827B2005071F7 /* PBXContainerItemProxy */ = {
+		225664AB2059AC5200BE2D50 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = "Logger::Logger";
 			remoteInfo = Logger;
 		};
-		22E5ADE6205827B2005071F7 /* PBXContainerItemProxy */ = {
+		225664AC2059AC5200BE2D50 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = "Docopt::Docopt";
 			remoteInfo = Docopt;
 		};
-		22E5ADE7205827B2005071F7 /* PBXContainerItemProxy */ = {
+		225664AD2059AC5200BE2D50 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = "Builder::BuilderTests";
 			remoteInfo = BuilderTests;
 		};
-		22E5ADE8205827B2005071F7 /* PBXContainerItemProxy */ = {
+		225664AE2059AC5200BE2D50 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = OBJ_1 /* Project object */;
 			proxyType = 1;
@@ -158,7 +158,7 @@
 		OBJ_15 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		OBJ_16 /* Failure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Failure.swift; sourceTree = "<group>"; };
 		OBJ_19 /* BuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuilderTests.swift; sourceTree = "<group>"; };
-		OBJ_20 /* Example */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Example; sourceTree = SOURCE_ROOT; };
+		OBJ_20 /* Builder.xcworkspace */ = {isa = PBXFileReference; lastKnownFileType = wrapper.workspace; path = Builder.xcworkspace; sourceTree = SOURCE_ROOT; };
 		OBJ_24 /* Argument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Argument.swift; sourceTree = "<group>"; };
 		OBJ_25 /* BranchPattern.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BranchPattern.swift; sourceTree = "<group>"; };
 		OBJ_26 /* Command.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Command.swift; sourceTree = "<group>"; };
@@ -353,7 +353,7 @@
 				OBJ_7 /* Configs */,
 				OBJ_9 /* Sources */,
 				OBJ_17 /* Tests */,
-				OBJ_20 /* Example */,
+				OBJ_20 /* Builder.xcworkspace */,
 				OBJ_21 /* Dependencies */,
 				OBJ_51 /* Products */,
 			);
@@ -363,11 +363,11 @@
 		OBJ_51 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				"Builder::BuilderTests::Product" /* BuilderTests.xctest */,
-				"Builder::BuilderCommand::Product" /* BuilderCommand */,
-				"Builder::Builder::Product" /* Builder.framework */,
 				"Logger::Logger::Product" /* Logger.framework */,
+				"Builder::Builder::Product" /* Builder.framework */,
 				"Docopt::Docopt::Product" /* Docopt.framework */,
+				"Builder::BuilderCommand::Product" /* BuilderCommand */,
+				"Builder::BuilderTests::Product" /* BuilderTests.xctest */,
 			);
 			name = Products;
 			sourceTree = BUILT_PRODUCTS_DIR;
@@ -650,52 +650,52 @@
 		OBJ_107 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "Builder::Builder" /* Builder */;
-			targetProxy = 22E5ADE1205827B1005071F7 /* PBXContainerItemProxy */;
+			targetProxy = 225664AA2059AC5200BE2D50 /* PBXContainerItemProxy */;
 		};
 		OBJ_108 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "Logger::Logger" /* Logger */;
-			targetProxy = 22E5ADE2205827B1005071F7 /* PBXContainerItemProxy */;
+			targetProxy = 225664AB2059AC5200BE2D50 /* PBXContainerItemProxy */;
 		};
 		OBJ_109 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "Docopt::Docopt" /* Docopt */;
-			targetProxy = 22E5ADE3205827B1005071F7 /* PBXContainerItemProxy */;
+			targetProxy = 225664AC2059AC5200BE2D50 /* PBXContainerItemProxy */;
 		};
 		OBJ_158 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "Builder::BuilderCommand" /* BuilderCommand */;
-			targetProxy = 22E5ADE8205827B2005071F7 /* PBXContainerItemProxy */;
+			targetProxy = 225664AE2059AC5200BE2D50 /* PBXContainerItemProxy */;
 		};
 		OBJ_69 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "Logger::Logger" /* Logger */;
-			targetProxy = 22E5ADDF205827B1005071F7 /* PBXContainerItemProxy */;
+			targetProxy = 225664A52059AC5200BE2D50 /* PBXContainerItemProxy */;
 		};
 		OBJ_71 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "Docopt::Docopt" /* Docopt */;
-			targetProxy = 22E5ADE0205827B1005071F7 /* PBXContainerItemProxy */;
+			targetProxy = 225664A62059AC5200BE2D50 /* PBXContainerItemProxy */;
 		};
 		OBJ_83 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "Builder::Builder" /* Builder */;
-			targetProxy = 22E5ADE4205827B2005071F7 /* PBXContainerItemProxy */;
+			targetProxy = 225664A72059AC5200BE2D50 /* PBXContainerItemProxy */;
 		};
 		OBJ_84 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "Logger::Logger" /* Logger */;
-			targetProxy = 22E5ADE5205827B2005071F7 /* PBXContainerItemProxy */;
+			targetProxy = 225664A82059AC5200BE2D50 /* PBXContainerItemProxy */;
 		};
 		OBJ_85 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "Docopt::Docopt" /* Docopt */;
-			targetProxy = 22E5ADE6205827B2005071F7 /* PBXContainerItemProxy */;
+			targetProxy = 225664A92059AC5200BE2D50 /* PBXContainerItemProxy */;
 		};
 		OBJ_96 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = "Builder::BuilderTests" /* BuilderTests */;
-			targetProxy = 22E5ADE7205827B2005071F7 /* PBXContainerItemProxy */;
+			targetProxy = 225664AD2059AC5200BE2D50 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
