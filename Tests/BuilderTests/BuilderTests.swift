@@ -53,7 +53,7 @@ class BuilderTests: XCTestCase {
             {
                 "settings" : {
                     "common" : {
-                        "inherits" : [{ "name" : "extraMacSettings", "platform" : "macOS" }],
+                        "inherits" : [{ "name" : "extraMacSettings", "filter" : ["macOS"] }],
                         "swift" : ["testSwift"],
                     },
                     "extraMacSettings" : {
@@ -119,7 +119,7 @@ class BuilderTests: XCTestCase {
             {
                 "settings" : {
                     "common" : {
-                        "inherits" : [{ "name" : "extraReleaseSettings", "configuration" : "release" }],
+                        "inherits" : [{ "name" : "extraReleaseSettings", "filter" : ["release"] }],
                         "swift" : ["testSwift"],
                     },
                     "extraReleaseSettings" : {

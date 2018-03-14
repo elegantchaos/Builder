@@ -8,8 +8,7 @@ typealias SettingList = [String]
 
 struct Inheritance : Decodable {
     let name : String
-    let platform : String?
-    let configuration : String?
+    let filter : [String]?
 }
 
 struct Settings : Decodable {
@@ -89,20 +88,28 @@ struct Configuration : Decodable {
     let settings : [String:Settings]
     let schemes : [String:[Phase]]
     
-    func applyInheritance(to settings : Settings, configuration : String, platform : String) throws -> Settings {
+    func applyInheritance(to settings : Settings, filter : [String]) throws -> Settings {
         guard let inherited = settings.inherits else {
             return settings
         }
         
         var merged = settings
         for sub in inherited {
-            let configsMatch = (sub.configuration == nil || sub.configuration == configuration)
-            let platformsMatch = (sub.platform == nil || sub.platform == platform)
-            if configsMatch && platformsMatch {
+            var match = sub.filter == nil || sub.filter!.count == 0
+            if !match {
+                for item in sub.filter! {
+                    if filter.contains(item) {
+                        match = true
+                        break
+                    }
+                }
+            }
+            
+            if match {
                 guard let subSettings = self.settings[sub.name] else {
                     throw Failure.unknownOption(name: sub.name)
                 }
-                let subWithInheritance = try applyInheritance(to: subSettings, configuration: configuration, platform: platform)
+                let subWithInheritance = try applyInheritance(to: subSettings, filter: filter)
                 merged = Settings.mergedSettings(merged, subWithInheritance)
             }
         }
@@ -120,6 +127,6 @@ struct Configuration : Decodable {
             
         }
         
-        return try applyInheritance(to: settings, configuration: configuration, platform: platform)
+        return try applyInheritance(to: settings, filter: [configuration, platform])
     }
 }
