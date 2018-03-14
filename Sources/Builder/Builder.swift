@@ -179,7 +179,7 @@ public class Builder {
                 let action = phase.arguments[0]
                 try execute(action: action, configuration: configuration, settings: settings)
             default:
-                let toolOutput = try swift("run", arguments: [command] + phase.arguments)
+                let toolOutput = try swift("run", arguments: settings + [command] + phase.arguments)
                 output.log("- ran \(command): \(toolOutput)")
             }
         }
