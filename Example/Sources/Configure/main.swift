@@ -4,7 +4,7 @@
 // For licensing terms, see http://elegantchaos.com/license/liberal/.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-import BuilderBasicConfigure
+import BuilderConfiguration
 
 let settings = Settings(schemes: [
     .scheme(
@@ -28,18 +28,18 @@ let settings = Settings(schemes: [
 
 let configuration = Configuration(
     settings: settings,
-    schemes: [
-        .scheme(name:"build", phases:[
-            .phase(name:"Preparing", tool: "BuilderToolExample", arguments:[]),
-            .phase(name:"Building", tool: "build", arguments:["Example"]),
-            .phase(name:"Packaging", tool: "BuilderToolExample", arguments:["blah", "waffle"]),
+    actions: [
+        .action(name:"build", phases:[
+            .toolPhase(name:"Preparing", tool: "BuilderToolExample"),
+            .buildPhase(name:"Building", target:"Example"),
+            .toolPhase(name:"Packaging", tool: "BuilderToolExample", arguments:["blah", "waffle"]),
             ]),
-        .scheme(name:"test", phases:[
-            .phase(name:"Testing", tool: "test", arguments:["Example"]),
+        .action(name:"test", phases:[
+            .testPhase(name:"Testing", target:"Example"),
             ]),
-        .scheme(name:"run", phases:[
-            .phase(name:"Building", tool: "scheme", arguments:["build"]),
-            .phase(name:"Running", tool: "run", arguments:["Example"]),
+        .action(name:"run", phases:[
+            .actionPhase(name:"Building", action: "build"),
+            .toolPhase(name:"Running", tool: "run", arguments:["Example"]),
             ]),
     ]
 )
