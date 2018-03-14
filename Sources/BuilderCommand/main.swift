@@ -11,11 +11,11 @@ let doc = """
 Build, test, and run SwiftPM packages.
 
 Usage:
-    builder [<command>] [--configuration <config>] [--] [<other>...]
+    builder [<action>] [--configuration <config>] [--] [<other>...]
     builder (-h | --help)
 
 Arguments:
-    <command>                       The command to execute [default: build].
+    <action>                       The action to perform [default: build].
 
 
 Options:
@@ -37,7 +37,7 @@ let output = Logger.stdout
 let verbose = Logger("com.elegantchaos.builder.verbose", handlers:[PrintHandler()])
 
 var args = Arguments(documentation: doc)
-let command = args.argument("command", default: "build")
+let command = args.argument("action", default: "build")
 
 do {
     let configuration = try args.option("configuration")
