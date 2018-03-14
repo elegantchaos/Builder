@@ -7,7 +7,6 @@ let package = Package(
     name: "Builder",
     products: [
       .executable(name: "builder", targets: ["BuilderCommand"]),
-      .library(name: "Builder", targets: ["Builder"])
     ],
     dependencies: [
         .package(url: "https://github.com/elegantchaos/Logger", from: "1.0.6"),
