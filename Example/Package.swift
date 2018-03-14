@@ -15,7 +15,7 @@ let package = Package(
         .package(url: "https://github.com/elegantchaos/BuilderToolExample.git", from: "1.0.5"),
 
         // support library we're going to use in the configuration target
-        .package(url: "https://github.com/elegantchaos/BuilderConfiguration.git", from: "1.1.0"),
+        .package(url: "https://github.com/elegantchaos/BuilderConfiguration.git", from: "1.1.1"),
     ],
     targets: [
         .target(

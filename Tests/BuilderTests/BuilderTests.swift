@@ -61,7 +61,7 @@ class BuilderTests: XCTestCase {
                     }
                 },
                 "actions" : {
-                    "action1" : [ {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]} ],
+                    "action1" : [ {"command" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]} ],
                 }
             }
             """
@@ -98,7 +98,7 @@ class BuilderTests: XCTestCase {
                     }
                 },
                 "actions" : {
-                    "action1" : [ {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]} ],
+                    "action1" : [ {"command" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]} ],
                 }
             }
             """
@@ -127,7 +127,7 @@ class BuilderTests: XCTestCase {
                     }
                 },
                 "actions" : {
-                    "action1" : [ {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]} ],
+                    "action1" : [ {"command" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]} ],
                 }
             }
             """
@@ -152,11 +152,11 @@ class BuilderTests: XCTestCase {
                 "settings" : { "common" : { } },
                 "actions" : {
                     "action1" : [
-                        {"tool" : "tool1", "name" : "test1", "arguments" : ["arg1"]},
-                        {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]}
+                        {"command" : "tool1", "name" : "test1", "arguments" : ["arg1"]},
+                        {"command" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]}
                     ],
                     "action2" : [
-                        {"tool" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]}
+                        {"command" : "tool2", "name" : "test2", "arguments" : ["arg2a", "arg2b"]}
                     ]
                 }
             }

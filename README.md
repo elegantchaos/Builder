@@ -67,7 +67,7 @@ The idea behind this approach is that:
 
 If this functionality was built into `swift`, then for many cases it would be sufficient to completely define not only the package but how to build it.
 
-The entire chain of build dependencies, including additional tools (such as `mogenerator`, `protobuf`, etc), can be fetched and built locally by the package manager itself.
+The entire chain of build dependencies, including additional tools (such as `protobuf`), can be fetched and built locally by the package manager itself.
 
 This is intended to encourage, as much as possible, people to stay platform-neutral within the Swift ecosystem.
 
@@ -81,7 +81,7 @@ In this demo, the `Configure` target from the example project looks like this:
 
 ```swift
 
-import BuilderBasicConfigure
+import BuilderConfiguration
 
 let settings = Settings(schemes: [
     .scheme(
@@ -105,18 +105,18 @@ let settings = Settings(schemes: [
 
 let configuration = Configuration(
     settings: settings,
-    schemes: [
-        .scheme(name:"build", phases:[
-            .phase(name:"Preparing", tool: "BuilderToolExample", arguments:[]),
-            .phase(name:"Building", tool: "build", arguments:["Example"]),
-            .phase(name:"Packaging", tool: "BuilderToolExample", arguments:["blah", "waffle"]),
+    actions: [
+        .action(name:"build", phases:[
+            .toolPhase(name:"Preparing", tool: "BuilderToolExample"),
+            .buildPhase(name:"Building", target:"Example"),
+            .toolPhase(name:"Packaging", tool: "BuilderToolExample", arguments:["blah", "waffle"]),
             ]),
-        .scheme(name:"test", phases:[
-            .phase(name:"Testing", tool: "test", arguments:["Example"]),
+        .action(name:"test", phases:[
+            .testPhase(name:"Testing", target:"Example"),
             ]),
-        .scheme(name:"run", phases:[
-            .phase(name:"Building", tool: "scheme", arguments:["build"]),
-            .phase(name:"Running", tool: "run", arguments:["Example"]),
+        .action(name:"run", phases:[
+            .actionPhase(name:"Building", action: "build"),
+            .toolPhase(name:"Running", tool: "run", arguments:["Example"]),
             ]),
     ]
 )
@@ -145,7 +145,7 @@ Hopefully this example illustrates a few things:
 
 [^1]: This module is an external dependency, defined in a different git repo, and listed in our manifest in the normal way.
 
-[^2]: These action names are actually arbitrary - we could call them anything we like. If `builder` fails to find a `Configure` target however, it will fall back to just calling `swift`, and will pass the action to it as a first parameter. For this reason, it makes sense to use names like "build" and "test" if they correspond to SwiftPM actions. 
+[^2]: These action names are actually arbitrary - we could call them anything we like. If `builder` fails to find a `Configure` target however, it will fall back to just calling `swift`, and will pass the action to it as a first parameter. For this reason, it makes sense to use names like "build" and "test" if they correspond to SwiftPM actions.
 
 ## Flaws
 
@@ -200,11 +200,11 @@ The SwiftPM build system itself is backed by `llbuild`, thus can efficiently re-
 
 The custom phases that we execute live outside of the SwiftPM build system. It has no knowledge of them, and so we can't take advantage of this behaviour.
 
-Let's say we add a custom build phase which runs `mogenerator` and creates some Swift source files from a model. If we're lucky, SwiftPM may be smart enough to only recompile the generated source files that have actually changed.
+Let's say we add a custom build phase which runs `protobuf` and creates some Swift source files from a model. If we're lucky, SwiftPM may be smart enough to only recompile the generated source files that have actually changed.
 
-Builder however will not be so smart and will run `mogenerator` every time, regardless of whether the model has changed.
+Builder however will not be so smart and will run `protobuf` every time, regardless of whether the model has changed.
 
-Clearly `mogenerator` could implement its own dependency checking, as could every custom tool. Not ideal.
+Clearly `protobuf` could implement its own dependency checking, as could every custom tool. Not ideal.
 
 Possibly we could extend Builder's model in a way that allows custom tools to describe their dependencies, so that we could provide the dependency logic for all custom tools, maybe even backed by `llbuild`. Xcode's custom build phases attempts to do this, allowing you to describe a list of input and output files, but it's not very flexible and requires files to be listed individually. A decent system would require good pattern matching and the ability to write general rules...
 
@@ -255,14 +255,13 @@ This is potentially confusing, a properly integrated implementation might change
 let package = Package(
     name: "Example",
     products: [
-        // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .executable(
             name: "Example",
             targets: ["Example"]),
     ],
     dependencies: [
-        // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/elegantchaos/BuilderToolExample.git", from: "1.0.3"),
+        .package(url: "https://github.com/elegantchaos/BuilderConfiguration.git", from: "1.1.0"),
     ],
     configuration:[
       .configurationTarget(
@@ -301,9 +300,3 @@ It's a bit messy that the `Configure` target it built as an executable, and thus
 In theory it ought to be possible to build Configure as a dynamic library, then link to it and use it directly from Builder.
 
 Similarly this could also be done for the standalone tools - although there is arguably more advantage with them being able to be invoked manually from the command line.
-
-### Configuration Support
-
-The configuration that the `Configure` target returns is essentially just a big dictionary, but it has a defined structure.
-
-It would be possible to build support libraries to allow the configuration itself to be specified in a declarative manner (if it's static), or to at least support building it up semantically with easily understandable methods or enums representing the available compiler settings and their legal values.

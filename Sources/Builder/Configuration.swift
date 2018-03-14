@@ -66,7 +66,7 @@ struct Settings : Decodable {
 
 struct Phase : Decodable {
     let name : String
-    let tool : String
+    let command : String
     let arguments : [String]
 }
 

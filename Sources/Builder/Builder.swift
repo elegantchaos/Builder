@@ -161,8 +161,8 @@ public class Builder {
 
         for phase in action {
             setStage(phase.name)
-            let tool = phase.tool
-            switch (tool) {
+            let command = phase.command
+            switch (command) {
             case "test":
                 let product = phase.arguments[0]
                 let toolOutput = try swift("test", arguments: ["--configuration", self.configuration] + settings)
@@ -179,8 +179,8 @@ public class Builder {
                 let action = phase.arguments[0]
                 try execute(action: action, configuration: configuration, settings: settings)
             default:
-                let toolOutput = try swift("run", arguments: [tool] + phase.arguments)
-                output.log("- ran \(tool): \(toolOutput)")
+                let toolOutput = try swift("run", arguments: [command] + phase.arguments)
+                output.log("- ran \(command): \(toolOutput)")
             }
         }
     }
