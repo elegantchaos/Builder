@@ -4,6 +4,57 @@
 // For licensing terms, see http://elegantchaos.com/license/liberal/.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+typealias SettingList = [String]
+
+struct Inheritance : Decodable {
+    let name : String
+    let filter : [String]?
+}
+
+struct Settings : Decodable {
+    let common : SettingList?
+    let c : SettingList?
+    let cpp : SettingList?
+    let swift : SettingList?
+    let linker : SettingList?
+    let inherits : [Inheritance]?
+    
+    func compilerSettings() -> [String] {
+        var args : [String] = []
+        swift?.forEach({ args.append(contentsOf: ["-Xswiftc", "-\($0)"])})
+        c?.forEach({ args.append(contentsOf: ["-Xc", "-\($0)"])})
+        cpp?.forEach({ args.append(contentsOf: ["-Xcpp", "-\($0)"])})
+        linker?.forEach({ args.append(contentsOf: ["-Xlinker", "-\($0)"])})
+        return args
+    }
+    
+    static func mergedLists(_ l1 : SettingList?, _ l2 : SettingList?) -> SettingList {
+        if l1 == nil {
+            if l2 == nil {
+                return []
+            } else {
+                return l2!
+            }
+        } else {
+            if l2 == nil {
+                return l1!
+            } else {
+                return l1! + l2!
+            }
+        }
+    }
+    
+    static func mergedSettings(_ s1 : Settings, _ s2 : Settings) -> Settings {
+        return Settings(
+            common: mergedLists(s1.common, s2.common),
+            c: mergedLists(s1.c, s2.c),
+            cpp: mergedLists(s1.cpp, s2.cpp),
+            swift: mergedLists(s1.swift, s2.swift),
+            linker: mergedLists(s1.linker, s2.linker),
+            inherits: nil)
+    }
+}
+
 /**
  Data structure representing a phase of the build process.
  
@@ -15,7 +66,7 @@
 
 struct Phase : Decodable {
     let name : String
-    let tool : String
+    let command : String
     let arguments : [String]
 }
 
@@ -34,15 +85,48 @@ struct Phase : Decodable {
  */
 
 struct Configuration : Decodable {
-    let settings : [String:String]
-    let schemes : [String:[Phase]]
+    let settings : [String:Settings]
+    let actions : [String:[Phase]]
     
-    func compilerSettings() -> [String] {
-        var args : [String] = []
-        settings.forEach({ (key, value) in
-            args.append(contentsOf: ["-Xswiftc", "-\(key)", "-Xswiftc", "\(value)"])
-        })
-        return args
+    func applyInheritance(to settings : Settings, filter : [String]) throws -> Settings {
+        guard let inherited = settings.inherits else {
+            return settings
+        }
+        
+        var merged = settings
+        for sub in inherited {
+            var match = sub.filter == nil || sub.filter!.count == 0
+            if !match {
+                for item in sub.filter! {
+                    if filter.contains(item) {
+                        match = true
+                        break
+                    }
+                }
+            }
+            
+            if match {
+                guard let subSettings = self.settings[sub.name] else {
+                    throw Failure.unknownOption(name: sub.name)
+                }
+                let subWithInheritance = try applyInheritance(to: subSettings, filter: filter)
+                merged = Settings.mergedSettings(merged, subWithInheritance)
+            }
+        }
+        
+        return merged
     }
     
+    public func resolve(for scheme : String, configuration : String, platform : String) throws -> Settings {
+        var base = self.settings[scheme]
+        if base == nil {
+            base = self.settings["«base»"]
+        }
+        guard let settings = base else {
+            throw Failure.unknownOption(name: scheme)
+            
+        }
+        
+        return try applyInheritance(to: settings, filter: [configuration, platform])
+    }
 }

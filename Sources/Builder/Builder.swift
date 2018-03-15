@@ -5,6 +5,7 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 import Foundation
+import Logger
 
 /**
  Builder.
@@ -21,15 +22,20 @@ import Foundation
 
  */
 
-class Builder {
+public class Builder {
     let command : String
     let configuration : String
+    let output : Logger
+    let verbose : Logger
     var environment : [String:String] = ProcessInfo.processInfo.environment
+
     lazy var swiftPath = findSwift()
 
-    init(command : String = "build", configuration : String = "debug") {
+    public init(command : String = "build", configuration : String = "debug", output: Logger, verbose: Logger) {
         self.command = command
         self.configuration = configuration
+        self.output = output
+        self.verbose = verbose
 
         // TODO: flesh the environment out with more useful stuff
         self.environment["BUILDER_COMMAND"] = command
@@ -143,20 +149,20 @@ class Builder {
     }
 
     /**
-     Execute the phases associated with a given scheme.
+     Execute the phases associated with a given action.
      */
 
-    func execute(scheme name: String, configuration : Configuration, settings : [String]) throws {
-        guard let scheme = configuration.schemes[name] else {
+    func execute(action name: String, configuration : Configuration, settings : [String]) throws {
+        guard let action = configuration.actions[name] else {
             throw Failure.missingScheme(name: name)
         }
 
         output.log("\nScheme:\n- \(name).")
 
-        for phase in scheme {
+        for phase in action {
             setStage(phase.name)
-            let tool = phase.tool
-            switch (tool) {
+            let command = phase.command
+            switch (command) {
             case "test":
                 let product = phase.arguments[0]
                 let toolOutput = try swift("test", arguments: ["--configuration", self.configuration] + settings)
@@ -169,12 +175,12 @@ class Builder {
                 let product = phase.arguments[0]
                 let _ = try swift("build", arguments: ["--product", product, "--configuration", self.configuration] + settings)
                 output.log("- built \(product).")
-            case "scheme":
-                let scheme = phase.arguments[0]
-                try execute(scheme: scheme, configuration: configuration, settings: settings)
+            case "action":
+                let action = phase.arguments[0]
+                try execute(action: action, configuration: configuration, settings: settings)
             default:
-                let toolOutput = try swift("run", arguments: [tool] + phase.arguments)
-                output.log("- ran \(tool): \(toolOutput)")
+                let toolOutput = try swift("run", arguments: settings + [command] + phase.arguments)
+                output.log("- ran \(command): \(toolOutput)")
             }
         }
     }
@@ -183,7 +189,7 @@ class Builder {
      Perform the build.
      */
 
-    func execute(configurationTarget : String) throws {
+    public func execute(configurationTarget : String) throws {
         // try to build the Configure target
         setStage("Configuring", announce: false)
         do {
@@ -205,12 +211,12 @@ class Builder {
         let json = try run(configurePath)
         output.log("- parsing output")
         let configuration = try parse(configuration: json)
-
-        let settings = configuration.compilerSettings()
+        let configSettings = try configuration.resolve(for: command, configuration: self.configuration, platform: "macOS")
+        let settings = configSettings.compilerSettings()
         environment["BUILDER_SETTINGS"] = settings.joined(separator: ",")
 
-        // execute the scheme associated with the primary command we were passed (run/build/test/etc)
-        try execute(scheme: command, configuration: configuration, settings: settings)
+        // execute the action associated with the primary command we were passed (run/build/test/etc)
+        try execute(action: command, configuration: configuration, settings: settings)
 
         output.log("\nDone.\n\n")
     }
