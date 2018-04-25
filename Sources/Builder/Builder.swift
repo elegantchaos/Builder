@@ -30,7 +30,8 @@ public class Builder {
     var environment : [String:String] = ProcessInfo.processInfo.environment
 
     lazy var swiftPath = findSwift()
-
+    lazy var xcrunPath = findXCRun()
+    
     public init(command : String = "build", configuration : String = "debug", output: Logger, verbose: Logger) {
         self.command = command
         self.configuration = configuration
@@ -40,6 +41,26 @@ public class Builder {
         // TODO: flesh the environment out with more useful stuff
         self.environment["BUILDER_COMMAND"] = command
         self.environment["BUILDER_CONFIGURATION"] = configuration
+        self.environment["BUILDER_SDK_PLATFORM_PATH"] = try? xcrun("--show-sdk-platform-path")
+        self.environment["BUILDER_SDK_PLATFORM_VERSION"] = try? xcrun("--show-sdk-platform-version")
+        self.environment["BUILDER_SDK_VERSION"] = try? xcrun("--show-sdk-version")
+        self.environment["BUILDER_SDK_PATH"] = try? xcrun("--show-sdk-path")
+        
+        if let version = try? swift("--version") {
+            if let pattern = try? NSRegularExpression(pattern: "Apple Swift version ([\\d.]+).*swiftlang-([\\d.]+).*clang-([\\d.]+).*Target: (.*)", options: .dotMatchesLineSeparators) {
+                let matches = pattern.matches(in: version, options: [], range: NSRange(location: 0, length: version.count))
+                for match in matches {
+                    let swiftVersion = version[Range(match.range(at: 1), in:version)!]
+                    let langVersion = version[Range(match.range(at: 2), in:version)!]
+                    let clangVersion = version[Range(match.range(at: 3), in:version)!]
+                    let targetVersion = version[Range(match.range(at: 4), in:version)!]
+                    self.environment["BUILDER_SWIFT_VERSION"] = String(swiftVersion)
+                    self.environment["BUILDER_SWIFT_LANGUAGE_VERSION"] = String(langVersion)
+                    self.environment["BUILDER_CLANG_VERSION"] = String(clangVersion)
+                    self.environment["BUILDER_TARGET_VERSION"] = String(targetVersion)
+                }
+            }
+        }
     }
 
     /**
@@ -57,6 +78,21 @@ public class Builder {
         return path
     }
 
+    /**
+     Return the path to the xcrun binary.
+     */
+    
+    func findXCRun() -> String {
+        let path : String
+        do {
+            path = try run("/usr/bin/which", arguments:["xcrun"]).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        } catch {
+            path = "/usr/bin/xcrun"
+        }
+        
+        return path
+    }
+    
 
     /**
      Invoke a command and some optional arguments.
@@ -121,6 +157,17 @@ public class Builder {
     func swift(_ command : String, arguments: [String] = []) throws -> String {
         verbose.log("running swift \(command)")
         return try run(swiftPath, arguments: [command] + arguments)
+    }
+
+    /**
+    Invoke `xcrun` with a command and some optional arguments.
+     On success, returns the captured output from stdout.
+     On failure, throws an error.
+     */
+
+    func xcrun(_ command : String, arguments: [String] = []) throws -> String {
+        verbose.log("running swift \(command)")
+        return try run(xcrunPath, arguments: [command] + arguments).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /**
@@ -214,7 +261,7 @@ public class Builder {
         let configSettings = try configuration.resolve(for: command, configuration: self.configuration, platform: "macOS")
         let settings = configSettings.compilerSettings()
         environment["BUILDER_SETTINGS"] = settings.joined(separator: ",")
-
+        
         // execute the action associated with the primary command we were passed (run/build/test/etc)
         try execute(action: command, configuration: configuration, settings: settings)
 
