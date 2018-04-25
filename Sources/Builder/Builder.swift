@@ -38,7 +38,14 @@ public class Builder {
         self.output = output
         self.verbose = verbose
 
-        // TODO: flesh the environment out with more useful stuff
+        self.populateEnvironment()
+    }
+
+    /**
+        Fill in some envionment values.
+    */
+ 
+    func populateEnvironment() {
         self.environment["BUILDER_COMMAND"] = command
         self.environment["BUILDER_CONFIGURATION"] = configuration
         self.environment["BUILDER_SDK_PLATFORM_PATH"] = try? xcrun("--show-sdk-platform-path")
@@ -62,7 +69,7 @@ public class Builder {
             }
         }
     }
-
+    
     /**
      Return the path to the swift binary.
      */
@@ -260,8 +267,13 @@ public class Builder {
         let configuration = try parse(configuration: json)
         let configSettings = try configuration.resolve(for: command, configuration: self.configuration, platform: "macOS")
         let settings = configSettings.compilerSettings()
-        environment["BUILDER_SETTINGS"] = settings.joined(separator: ",")
-        
+        environment["BUILDER_SWIFT_SETTINGS"] = settings.joined(separator: ",")
+        if let values = configSettings.values {
+            for item in values {
+                environment["BUILDER_SETTING:\(item.key.uppercased())"] = item.value
+            }
+        }
+                
         // execute the action associated with the primary command we were passed (run/build/test/etc)
         try execute(action: command, configuration: configuration, settings: settings)
 
