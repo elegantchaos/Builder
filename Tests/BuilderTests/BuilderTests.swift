@@ -17,13 +17,14 @@ class BuilderTests: XCTestCase {
     }
 
     func testMergingSettings() {
-        let s1 = Settings(common: nil, c: nil, cpp: nil, swift: nil, linker: nil, inherits: nil)
-        let s2 = Settings(common: ["test"], c: nil, cpp: nil, swift: nil, linker: nil, inherits: nil)
+        let s1 = Settings(common: nil, c: nil, cpp: nil, swift: nil, linker: nil, values: ["key1" : "value1", "key2" : "value2"], inherits: nil)
+        let s2 = Settings(common: ["test"], c: nil, cpp: nil, swift: nil, linker: nil, values: ["key1" : "value1/2", "key3" : "value3"], inherits: nil)
 
         XCTAssertEqual(Settings.mergedSettings(s1, s1).common!, [])
         XCTAssertEqual(Settings.mergedSettings(s1, s2).common!, ["test"])
         XCTAssertEqual(Settings.mergedSettings(s2, s1).common!, ["test"])
         XCTAssertEqual(Settings.mergedSettings(s2, s2).common!, ["test", "test"])
+        XCTAssertEqual(Settings.mergedSettings(s2, s2).values!, ["key1" : "value1/2", "key3" : "value3"])
     }
 
     func testCompilerSetting() throws {
@@ -33,6 +34,7 @@ class BuilderTests: XCTestCase {
               "swift" : ["testSwift"],
               "common" : ["testCommon"],
               "c" : ["testC"],
+              "values" : {"k1" : "v1"},
               "linker" : ["testLinker"]
             }
             """
