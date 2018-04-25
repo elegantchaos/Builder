@@ -266,7 +266,7 @@ public class Builder {
         output.log("- parsing output")
         let configuration = try parse(configuration: json)
         let configSettings = try configuration.resolve(for: command, configuration: self.configuration, platform: "macOS")
-        let settings = configSettings.compilerSettings()
+        let settings = configSettings.compilerSettings(for: "swift")
         environment["BUILDER_SWIFT_SETTINGS"] = settings.joined(separator: ",")
         if let values = configSettings.values {
             for item in values {

@@ -7,6 +7,24 @@
 typealias SettingList = [String]
 typealias SettingsDictionary = [String:String]
 
+let settingsMapping : [String:Any] = [
+    "swift": [
+        "prefix": "-Xswiftc",
+        "mappings": [
+            "minimum-target": [
+                "macosx10.12" : ["target", "x86_64-apple-macosx10.12"]
+            ],
+            "optimisation": [
+            ],
+            "definition": [
+            ]
+        ]
+    ]
+]
+
+//MACOSX_DEPLOYMENT_TARGET = 10.12
+
+
 struct Inheritance : Decodable {
     let name : String
     let filter : [String]?
@@ -21,12 +39,32 @@ struct Settings : Decodable {
     let values : SettingsDictionary?
     let inherits : [Inheritance]?
     
-    func compilerSettings() -> [String] {
+    
+    func compilerSettings(for tool: String) -> [String] {
         var args : [String] = []
-        swift?.forEach({ args.append(contentsOf: ["-Xswiftc", "-\($0)"])})
-        c?.forEach({ args.append(contentsOf: ["-Xc", "-\($0)"])})
-        cpp?.forEach({ args.append(contentsOf: ["-Xcpp", "-\($0)"])})
-        linker?.forEach({ args.append(contentsOf: ["-Xlinker", "-\($0)"])})
+        
+        if let values = values {
+            if let mapping = settingsMapping[tool] as? [String:Any] {
+                let prefix = mapping["prefix"] as? String
+                if let mappings = mapping["mappings"] as? [String:Any] {
+                    for value in values {
+                        if prefix != nil {
+                            args.append(prefix!)
+                        }
+                        if let keyMap = mappings[value.key] as? [String:Any] {
+                            if let valueList = keyMap[value.value] as? [String] {
+                                args.append(contentsOf: valueList)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+//        swift?.forEach({ args.append(contentsOf: ["-Xswiftc", "-\($0)"])})
+//        c?.forEach({ args.append(contentsOf: ["-Xc", "-\($0)"])})
+//        cpp?.forEach({ args.append(contentsOf: ["-Xcpp", "-\($0)"])})
+//        linker?.forEach({ args.append(contentsOf: ["-Xlinker", "-\($0)"])})
+
         return args
     }
     
