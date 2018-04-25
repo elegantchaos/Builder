@@ -5,6 +5,7 @@
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 typealias SettingList = [String]
+typealias SettingsDictionary = [String:String]
 
 struct Inheritance : Decodable {
     let name : String
@@ -17,6 +18,7 @@ struct Settings : Decodable {
     let cpp : SettingList?
     let swift : SettingList?
     let linker : SettingList?
+    let values : SettingsDictionary?
     let inherits : [Inheritance]?
     
     func compilerSettings() -> [String] {
@@ -43,7 +45,23 @@ struct Settings : Decodable {
             }
         }
     }
-    
+
+    static func mergedDictionaries(_ l1 : SettingsDictionary?, _ l2 : SettingsDictionary?) -> SettingsDictionary {
+        if l1 == nil {
+            if l2 == nil {
+                return [:]
+            } else {
+                return l2!
+            }
+        } else {
+            if l2 == nil {
+                return l1!
+            } else {
+                return l1!.merging(l2!, uniquingKeysWith: { (l,r) in return l })
+            }
+        }
+    }
+
     static func mergedSettings(_ s1 : Settings, _ s2 : Settings) -> Settings {
         return Settings(
             common: mergedLists(s1.common, s2.common),
@@ -51,6 +69,7 @@ struct Settings : Decodable {
             cpp: mergedLists(s1.cpp, s2.cpp),
             swift: mergedLists(s1.swift, s2.swift),
             linker: mergedLists(s1.linker, s2.linker),
+            values: mergedDictionaries(s1.values, s2.values),
             inherits: nil)
     }
 }
