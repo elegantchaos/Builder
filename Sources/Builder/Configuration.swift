@@ -14,13 +14,15 @@ let settingsMapping : [String:Any] = [
         "swift" : [
             "prefix": ["-Xswiftc", "-target", "-Xswiftc"],
             "values": [
-                "macosx10.12" : "x86_64-apple-macosx10.12"
+                "macosx10.12" : "x86_64-apple-macosx10.12",
+                "macosx10.13" : "x86_64-apple-macosx10.13"
             ]
         ],
         "xcconfig": [
             "prefix": ["\nMACOSX_DEPLOYMENT_TARGET = "],
             "values" : [
-                "macosx10.12": "10.12"
+                "macosx10.12": "10.12",
+                "macosx10.13": "10.13"
             ]
         ]
     ],
@@ -34,6 +36,9 @@ let settingsMapping : [String:Any] = [
     ],
     
     "definition": [
+        "swift" : [
+            "rawValues" : ["-Xswiftc", "-D"]
+        ],
     ]
 ]
 
@@ -63,6 +68,13 @@ struct Settings : Decodable {
                 result.append(value)
             } else if let values = valueMappings[value] as? [String] {
                 result.append(contentsOf: values)
+            }
+        } else if let rawValues = mapping["rawValues"] as? [String] {
+            var prefixValues = rawValues
+            prefixValues.removeLast()
+            if let lastValue = rawValues.last {
+                result.append(contentsOf: prefixValues)
+                result.append(lastValue.appending(value))
             }
         }
 
