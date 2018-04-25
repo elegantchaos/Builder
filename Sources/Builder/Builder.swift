@@ -272,7 +272,7 @@ public class Builder {
         environment["BUILDER_SWIFT_SETTINGS"] = settings.joined(separator: ",")
         if let values = configSettings.values {
             for item in values {
-                environment["BUILDER_SETTING:\(item.key.uppercased())"] = item.value
+                environment["BUILDER_SETTING:\(item.key.uppercased())"] = item.value.stringValue()
             }
         }
                 

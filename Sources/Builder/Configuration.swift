@@ -4,8 +4,68 @@
 // For licensing terms, see http://elegantchaos.com/license/liberal/.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+import Foundation
+
+struct SettingsValue : Equatable, Decodable, ExpressibleByArrayLiteral, ExpressibleByStringLiteral {
+    enum Value : Equatable {
+        case string(String)
+        case list([String])
+    }
+    
+    static func == (lhs: SettingsValue, rhs: SettingsValue) -> Bool {
+        return lhs.value == rhs.value
+    }
+    
+    
+    typealias ArrayLiteralElement = String
+    typealias StringLiteralType = String
+    
+    let value: Value
+    
+    init(from decoder: Decoder) throws {
+        if var container = try? decoder.unkeyedContainer() {
+            var value: [String] = []
+            while !container.isAtEnd {
+                if let v = try? container.decode(String.self) {
+                    value.append(v)
+                }
+            }
+            self.value = .list(value)
+        } else {
+            let container = try decoder.singleValueContainer()
+            self.value = .string(try container.decode(String.self))
+        }
+    }
+    
+    init(stringLiteral: String) {
+        self.value = .string(stringLiteral)
+    }
+    
+    init(arrayLiteral elements: String...) {
+        self.value = .list(elements)
+    }
+    
+    func stringValue() -> String {
+        if case let .string(s) = value {
+            return s
+        }
+        
+        return ""
+    }
+    
+    func listValue() -> [String] {
+        if case let .list(l) = value {
+            return l
+        } else if case let .string(s) = value {
+            return [s]
+        }
+        
+        return []
+    }
+}
+
 typealias SettingList = [String]
-typealias SettingsDictionary = [String:String]
+typealias SettingsDictionary = [String:SettingsValue]
 
 // TODO: this should really be read from a json file or series of json files (one per tool/platform?)
 // TODO: it would also make sense to allow users to add/contribute to it somehow
@@ -49,32 +109,31 @@ struct Inheritance : Decodable {
 }
 
 struct Settings : Decodable {
-    let common : SettingList?
-    let c : SettingList?
-    let cpp : SettingList?
-    let swift : SettingList?
-    let linker : SettingList?
     let values : SettingsDictionary?
     let inherits : [Inheritance]?
     
-    func mappedSettings(for name: String, value: String, mapping: [String:Any]) -> [String] {
+    func mappedSettings(for name: String, value: SettingsValue, mapping: [String:Any]) -> [String] {
         var result: [String] = []
         if let prefix = mapping["prefix"] as? [String] {
             result.append(contentsOf: prefix)
         }
         
         if let valueMappings = mapping["values"] as? [String:Any] {
-            if let value = valueMappings[value] as? String {
-                result.append(value)
-            } else if let values = valueMappings[value] as? [String] {
-                result.append(contentsOf: values)
+            for value in value.listValue() {
+                if let value = valueMappings[value] as? String {
+                    result.append(value)
+                } else if let values = valueMappings[value] as? [String] {
+                    result.append(contentsOf: values)
+                }
             }
         } else if let rawValues = mapping["rawValues"] as? [String] {
             var prefixValues = rawValues
             prefixValues.removeLast()
             if let lastValue = rawValues.last {
-                result.append(contentsOf: prefixValues)
-                result.append(lastValue.appending(value))
+                for value in value.listValue() {
+                    result.append(contentsOf: prefixValues)
+                    result.append(lastValue.appending(value))
+                }
             }
         }
 
@@ -93,10 +152,6 @@ struct Settings : Decodable {
                 }
             }
         }
-//        swift?.forEach({ args.append(contentsOf: ["-Xswiftc", "-\($0)"])})
-//        c?.forEach({ args.append(contentsOf: ["-Xc", "-\($0)"])})
-//        cpp?.forEach({ args.append(contentsOf: ["-Xcpp", "-\($0)"])})
-//        linker?.forEach({ args.append(contentsOf: ["-Xlinker", "-\($0)"])})
 
         return args
     }
@@ -135,11 +190,6 @@ struct Settings : Decodable {
 
     static func mergedSettings(_ s1 : Settings, _ s2 : Settings) -> Settings {
         return Settings(
-            common: mergedLists(s1.common, s2.common),
-            c: mergedLists(s1.c, s2.c),
-            cpp: mergedLists(s1.cpp, s2.cpp),
-            swift: mergedLists(s1.swift, s2.swift),
-            linker: mergedLists(s1.linker, s2.linker),
             values: mergedDictionaries(s1.values, s2.values),
             inherits: nil)
     }
