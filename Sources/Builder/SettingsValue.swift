@@ -46,9 +46,11 @@ enum SettingsValue : Equatable, Decodable, ExpressibleByArrayLiteral, Expressibl
     func stringValue() -> String {
         if case let .string(s) = self {
             return s
+        } else if case let .list(l) = self {
+            return l.joined(separator: ",")
+        } else {
+            return ""
         }
-        
-        return ""
     }
     
     func listValue() -> [String] {
