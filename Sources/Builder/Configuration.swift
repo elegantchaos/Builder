@@ -79,7 +79,7 @@ let settingsMapping : [String:Any] = [
             ]
         ],
         "xcconfig": [
-            "prefix": ["\nMACOSX_DEPLOYMENT_TARGET = "],
+            "prefix": ["MACOSX_DEPLOYMENT_TARGET = "],
             "values" : [
                 "macosx10.12": "10.12",
                 "macosx10.13": "10.13"
@@ -90,7 +90,17 @@ let settingsMapping : [String:Any] = [
         "swift" : [
             "prefix": ["-Xswiftc"],
             "values": [
-                "none": "-Onone"
+                "none": "-Onone",
+                "size": "-Osize",
+                "speed": "-O"
+            ]
+        ],
+        "xcconfig" : [
+            "prefix" : ["SWIFT_OPTIMIZATION_LEVEL = "],
+            "values": [
+                "none": "-Onone",
+                "size": "-Osize",
+                "speed": "-O"
             ]
         ]
     ],
@@ -140,7 +150,7 @@ struct Settings : Decodable {
         return result
     }
     
-    func compilerSettings(for tool: String) -> [String] {
+    func mappedSettings(for tool: String) -> [String] {
         var args : [String] = []
         
         if let values = values {

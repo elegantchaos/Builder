@@ -148,7 +148,7 @@
 
 /* Begin PBXFileReference section */
 		"Builder::Builder::Product" /* Builder.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Builder.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		"Builder::BuilderCommand::Product" /* BuilderCommand */ = {isa = PBXFileReference; lastKnownFileType = text; path = BuilderCommand; sourceTree = BUILT_PRODUCTS_DIR; };
+		"Builder::BuilderCommand::Product" /* BuilderCommand */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; path = BuilderCommand; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Builder::BuilderTests::Product" /* BuilderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = BuilderTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Docopt::Docopt::Product" /* Docopt.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Docopt.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"Logger::Logger::Product" /* Logger.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Logger.framework; sourceTree = BUILT_PRODUCTS_DIR; };
