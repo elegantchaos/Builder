@@ -7,22 +7,35 @@
 typealias SettingList = [String]
 typealias SettingsDictionary = [String:String]
 
+// TODO: this should really be read from a json file or series of json files (one per tool/platform?)
+// TODO: it would also make sense to allow users to add/contribute to it somehow
 let settingsMapping : [String:Any] = [
-    "swift": [
-        "prefix": "-Xswiftc",
-        "mappings": [
-            "minimum-target": [
-                "macosx10.12" : ["target", "x86_64-apple-macosx10.12"]
-            ],
-            "optimisation": [
-            ],
-            "definition": [
+    "minimum-target": [
+        "swift" : [
+            "prefix": ["-Xswiftc", "-target", "-Xswiftc"],
+            "values": [
+                "macosx10.12" : "x86_64-apple-macosx10.12"
+            ]
+        ],
+        "xcconfig": [
+            "prefix": ["\nMACOSX_DEPLOYMENT_TARGET = "],
+            "values" : [
+                "macosx10.12": "10.12"
             ]
         ]
+    ],
+    "optimisation": [
+        "swift" : [
+            "prefix": ["-Xswiftc"],
+            "values": [
+                "none": "-Onone"
+            ]
+        ]
+    ],
+    
+    "definition": [
     ]
 ]
-
-//MACOSX_DEPLOYMENT_TARGET = 10.12
 
 
 struct Inheritance : Decodable {
@@ -39,23 +52,31 @@ struct Settings : Decodable {
     let values : SettingsDictionary?
     let inherits : [Inheritance]?
     
+    func mappedSettings(for name: String, value: String, mapping: [String:Any]) -> [String] {
+        var result: [String] = []
+        if let prefix = mapping["prefix"] as? [String] {
+            result.append(contentsOf: prefix)
+        }
+        
+        if let valueMappings = mapping["values"] as? [String:Any] {
+            if let value = valueMappings[value] as? String {
+                result.append(value)
+            } else if let values = valueMappings[value] as? [String] {
+                result.append(contentsOf: values)
+            }
+        }
+
+        return result
+    }
     
     func compilerSettings(for tool: String) -> [String] {
         var args : [String] = []
         
         if let values = values {
-            if let mapping = settingsMapping[tool] as? [String:Any] {
-                let prefix = mapping["prefix"] as? String
-                if let mappings = mapping["mappings"] as? [String:Any] {
-                    for value in values {
-                        if prefix != nil {
-                            args.append(prefix!)
-                        }
-                        if let keyMap = mappings[value.key] as? [String:Any] {
-                            if let valueList = keyMap[value.value] as? [String] {
-                                args.append(contentsOf: valueList)
-                            }
-                        }
+            for value in values {
+                if let mapping = settingsMapping[value.key] as? [String:Any] {
+                    if let toolMapping = mapping[tool] as? [String:Any] {
+                        args.append(contentsOf: mappedSettings(for: value.key, value: value.value, mapping: toolMapping))
                     }
                 }
             }
