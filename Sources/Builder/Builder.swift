@@ -31,7 +31,7 @@ public class Builder {
 
     lazy var swiftPath = findSwift()
     lazy var xcrunPath = findXCRun()
-    
+
     public init(command : String = "build", configuration : String = "debug", output: Logger, verbose: Logger) {
         self.command = command
         self.configuration = configuration
@@ -44,15 +44,18 @@ public class Builder {
     /**
         Fill in some envionment values.
     */
- 
+
     func populateEnvironment() {
         self.environment["BUILDER_COMMAND"] = command
         self.environment["BUILDER_CONFIGURATION"] = configuration
+
+        #if !os(Linux)
         self.environment["BUILDER_SDK_PLATFORM_PATH"] = try? xcrun("--show-sdk-platform-path")
         self.environment["BUILDER_SDK_PLATFORM_VERSION"] = try? xcrun("--show-sdk-platform-version")
         self.environment["BUILDER_SDK_VERSION"] = try? xcrun("--show-sdk-version")
         self.environment["BUILDER_SDK_PATH"] = try? xcrun("--show-sdk-path")
-        
+        #endif
+
         if let version = try? swift("--version") {
             if let pattern = try? NSRegularExpression(pattern: "Apple Swift version ([\\d.]+).*swiftlang-([\\d.]+).*clang-([\\d.]+).*Target: (.*)", options: .dotMatchesLineSeparators) {
                 let matches = pattern.matches(in: version, options: [], range: NSRange(location: 0, length: version.count))
@@ -69,7 +72,7 @@ public class Builder {
             }
         }
     }
-    
+
     /**
      Return the path to the swift binary.
      */
@@ -88,7 +91,7 @@ public class Builder {
     /**
      Return the path to the xcrun binary.
      */
-    
+
     func findXCRun() -> String {
         let path : String
         do {
@@ -96,10 +99,10 @@ public class Builder {
         } catch {
             path = "/usr/bin/xcrun"
         }
-        
+
         return path
     }
-    
+
 
     /**
      Invoke a command and some optional arguments.
@@ -273,7 +276,7 @@ public class Builder {
                 environment["BUILDER_SETTING:\(item.key.uppercased())"] = item.value
             }
         }
-                
+
         // execute the action associated with the primary command we were passed (run/build/test/etc)
         try execute(action: command, configuration: configuration, settings: settings)
 
