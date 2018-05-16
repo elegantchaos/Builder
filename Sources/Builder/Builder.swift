@@ -23,28 +23,20 @@ import Logger
  */
 
 public class Builder {
-    let command : String
-    let configuration : String
-    #if os(macOS)
-    let platform = "macOS"
-    #elseif os(iOS)
-    let platform = "iOS"
-    #elseif os(Linux)
-    let platform = "linux"
-    #else
-    let platform = "unknown"
-    #endif
-
-    let output : Logger
-    let verbose : Logger
-    var environment : [String:String] = ProcessInfo.processInfo.environment
+    let command: String
+    let configuration: String
+    let platform: String
+    let output: Logger
+    let verbose: Logger
+    var environment: [String:String] = ProcessInfo.processInfo.environment
 
     lazy var swiftPath = findSwift()
     lazy var xcrunPath = findXCRun()
 
-    public init(command : String = "build", configuration : String = "debug", output: Logger, verbose: Logger) {
+    public init(command: String = "build", configuration: String = "debug", platform: String = Platform.currentPlatform(), output: Logger, verbose: Logger) {
         self.command = command
         self.configuration = configuration
+        self.platform = platform
         self.output = output
         self.verbose = verbose
 
