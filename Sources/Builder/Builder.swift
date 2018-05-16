@@ -25,6 +25,16 @@ import Logger
 public class Builder {
     let command : String
     let configuration : String
+    #if os(macOS)
+    let platform = "macOS"
+    #elseif os(iOS)
+    let platform = "iOS"
+    #elseif os(Linux)
+    let platform = "linux"
+    #else
+    let platform = "unknown"
+    #endif
+
     let output : Logger
     let verbose : Logger
     var environment : [String:String] = ProcessInfo.processInfo.environment
@@ -268,7 +278,7 @@ public class Builder {
         let json = try run(configurePath)
         output.log("- parsing output")
         let configuration = try parse(configuration: json)
-        let configSettings = try configuration.resolve(for: command, configuration: self.configuration, platform: "macOS")
+        let configSettings = try configuration.resolve(for: command, configuration: self.configuration, platform: platform)
         let settings = configSettings.mappedSettings(for: "swift")
         environment["BUILDER_SWIFT_SETTINGS"] = settings.joined(separator: ",")
         if let values = configSettings.values {
