@@ -45,6 +45,17 @@ public struct Arguments {
     }
 
     /**
+     Return an option, or a default value if it's missing.
+     */
+
+    public func option(_ name : String, `default`: String) -> String  {
+        if let value = parsed["--\(name)"] as? String {
+            return value
+        }
+        return `default`
+    }
+
+    /**
      Return an argument, or a default value if it's missing.
      */
 
