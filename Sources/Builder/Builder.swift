@@ -48,13 +48,8 @@ public class Builder {
     func populateEnvironment() {
         self.environment["BUILDER_COMMAND"] = command
         self.environment["BUILDER_CONFIGURATION"] = configuration
-<<<<<<< HEAD
-        self.environment["BUILDER_PLATFORM"] = "macOS"
-        self.environment["BUILDER_PLATFORM_FULL"] = "x86_64-apple-macosx10.10"
-=======
 
         #if !os(Linux)
->>>>>>> master
         self.environment["BUILDER_SDK_PLATFORM_PATH"] = try? xcrun("--show-sdk-platform-path")
         self.environment["BUILDER_SDK_PLATFORM_VERSION"] = try? xcrun("--show-sdk-platform-version")
         self.environment["BUILDER_SDK_VERSION"] = try? xcrun("--show-sdk-version")
