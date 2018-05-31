@@ -10,7 +10,7 @@ install:
 - swift package update
 script:
 - swift test
-- swift run builder -- -h
+- swift run builder -h
 notifications:
   email: false
   slack:
