@@ -17,37 +17,72 @@ class BuilderTests: XCTestCase {
     }
 
     func testMergingSettings() {
-        let s1 = Settings(common: nil, c: nil, cpp: nil, swift: nil, linker: nil, values: ["key1" : "value1", "key2" : "value2"], inherits: nil)
-        let s2 = Settings(common: ["test"], c: nil, cpp: nil, swift: nil, linker: nil, values: ["key1" : "value1/2", "key3" : "value3"], inherits: nil)
+        let s1 = Settings(values: ["key1" : "value1", "key2" : "value2"], inherits: nil)
+        let s2 = Settings(values: ["key1" : "value1/2", "key3" : "value3"], inherits: nil)
 
-        XCTAssertEqual(Settings.mergedSettings(s1, s1).common!, [])
-        XCTAssertEqual(Settings.mergedSettings(s1, s2).common!, ["test"])
-        XCTAssertEqual(Settings.mergedSettings(s2, s1).common!, ["test"])
-        XCTAssertEqual(Settings.mergedSettings(s2, s2).common!, ["test", "test"])
-        XCTAssertEqual(Settings.mergedSettings(s2, s2).values!, ["key1" : "value1/2", "key3" : "value3"])
+        let s1s1 = Settings.mergedSettings(s1, s1).values!
+        XCTAssertEqual(s1s1["key1"]!, "value1")
+        XCTAssertEqual(s1s1["key2"]!, "value2")
+        XCTAssertNil(s1s1["key3"])
+
+        let s1s2 = Settings.mergedSettings(s1, s2).values!
+        XCTAssertEqual(s1s2["key1"]!, "value1")
+        XCTAssertEqual(s1s2["key2"]!, "value2")
+        XCTAssertEqual(s1s2["key3"]!, "value3")
+
+        let s2s1 = Settings.mergedSettings(s2, s1).values!
+        XCTAssertEqual(s2s1["key1"]!, "value1/2")
+        XCTAssertEqual(s1s2["key2"]!, "value2")
+        XCTAssertEqual(s1s2["key3"]!, "value3")
+
+        let s2s2 = Settings.mergedSettings(s2, s2).values!
+        XCTAssertEqual(s2s2["key1"]!, "value1/2")
+        XCTAssertNil(s2s2["key2"])
+        XCTAssertEqual(s2s2["key3"]!, "value3")
     }
 
-    func testCompilerSetting() throws {
-        let compilerSettingsJSON = """
+    func testSwiftSettingsMapping() throws {
+        let settingsJSON = """
             {
-              "cpp" : ["testCpp"],
-              "swift" : ["testSwift"],
-              "common" : ["testCommon"],
-              "c" : ["testC"],
-              "values" : {"k1" : "v1"},
-              "linker" : ["testLinker"]
+              "values" : {
+                "optimisation" : "none",
+                "minimum-target" : "macosx10.12",
+                "definition" : "example"
+                },
             }
             """
 
-        guard let data = compilerSettingsJSON.data(using: String.Encoding.utf8) else {
+        guard let data = settingsJSON.data(using: String.Encoding.utf8) else {
             throw Failure.decodingFailed
         }
 
         let decoder = JSONDecoder()
         let settings = try decoder.decode(Settings.self, from: data)
 
-        let compiler = settings.compilerSettings()
-        XCTAssertEqual(compiler, ["-Xswiftc", "-testSwift", "-Xc", "-testC", "-Xcpp", "-testCpp", "-Xlinker", "-testLinker"])
+        let mapped = settings.mappedSettings(for: "swift")
+        XCTAssertEqual(mapped, ["-Xswiftc", "-Dexample", "-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-Onone"])
+    }
+
+    func testXCConfigSettingsMapping() throws {
+        let settingsJSON = """
+            {
+              "values" : {
+                "optimisation" : "none",
+                "minimum-target" : "macosx10.12",
+                "definition" : "example"
+                },
+            }
+            """
+
+        guard let data = settingsJSON.data(using: String.Encoding.utf8) else {
+            throw Failure.decodingFailed
+        }
+
+        let decoder = JSONDecoder()
+        let settings = try decoder.decode(Settings.self, from: data)
+
+        let mapped = settings.mappedSettings(for: "xcconfig")
+        XCTAssertEqual(mapped, ["MACOSX_DEPLOYMENT_TARGET = ", "10.12", "SWIFT_OPTIMIZATION_LEVEL = ", "-Onone"])
     }
 
     func testPlatformOverrides() throws {
@@ -56,10 +91,14 @@ class BuilderTests: XCTestCase {
                 "settings" : {
                     "«base»" : {
                         "inherits" : [{ "name" : "extraMacSettings", "filter" : ["macOS"] }],
-                        "swift" : ["testSwift"],
+                          "values" : {
+                            "optimisation" : "none",
+                            },
                     },
                     "extraMacSettings" : {
-                      "swift" : ["extraMacOnly"],
+                      "values" : {
+                        "minimum-target" : "macosx10.12"
+                        },
                     }
                 },
                 "actions" : {
@@ -75,11 +114,13 @@ class BuilderTests: XCTestCase {
         let decoder = JSONDecoder()
         let configuration = try decoder.decode(Configuration.self, from: data)
 
+        // when we say the platform is macOS, we should get the extra settings mixed in from "extraMacSettigns"
         let macSettings = try configuration.resolve(for: "action1", configuration: "debug", platform:"macOS")
-        XCTAssertEqual(macSettings.compilerSettings(), ["-Xswiftc", "-testSwift", "-Xswiftc", "-extraMacOnly"])
+        XCTAssertEqual(macSettings.mappedSettings(for: "swift"), ["-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-Onone"])
 
+        // when we say the platform is linux, we should just get the base settings
         let linuxSettings = try configuration.resolve(for: "action1", configuration: "debug", platform:"linux")
-        XCTAssertEqual(linuxSettings.compilerSettings(), ["-Xswiftc", "-testSwift"])
+        XCTAssertEqual(linuxSettings.mappedSettings(for: "swift"), ["-Xswiftc", "-Onone"])
 
     }
 
@@ -89,14 +130,20 @@ class BuilderTests: XCTestCase {
                 "settings" : {
                     "«base»" : {
                         "inherits" : [{ "name" : "inherited1"}],
-                        "swift" : ["testSwift"],
+                          "values" : {
+                            "optimisation" : "none",
+                            },
                     },
                     "inherited1" : {
                         "inherits" : [{ "name" : "inherited2"}],
-                      "swift" : ["extraInherited1"]
+                      "values" : {
+                        "minimum-target" : "macosx10.12"
+                        },
                     },
                     "inherited2" : {
-                      "swift" : ["extraInherited2"],
+                      "values" : {
+                        "definition" : ["example", "example2"]
+                        },
                     }
                 },
                 "actions" : {
@@ -112,8 +159,9 @@ class BuilderTests: XCTestCase {
         let decoder = JSONDecoder()
         let configuration = try decoder.decode(Configuration.self, from: data)
 
+        // we should get all the inherited settings
         let settings = try configuration.resolve(for: "action1", configuration: "debug", platform:"macOS")
-        XCTAssertEqual(settings.compilerSettings(), ["-Xswiftc", "-testSwift", "-Xswiftc", "-extraInherited1", "-Xswiftc", "-extraInherited2"])
+        XCTAssertEqual(settings.mappedSettings(for: "swift"), ["-Xswiftc", "-Dexample", "-Xswiftc", "-Dexample2", "-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-Onone"])
     }
 
     func testConfigurationOverrides() throws {
@@ -122,10 +170,14 @@ class BuilderTests: XCTestCase {
                 "settings" : {
                     "«base»" : {
                         "inherits" : [{ "name" : "extraReleaseSettings", "filter" : ["release"] }],
-                        "swift" : ["testSwift"],
+                          "values" : {
+                            "minimum-target" : "macosx10.12"
+                            },
                     },
                     "extraReleaseSettings" : {
-                      "swift" : ["extraReleaseOnly"],
+                        "values" : {
+                            "optimisation" : "speed",
+                        }
                     }
                 },
                 "actions" : {
@@ -141,11 +193,13 @@ class BuilderTests: XCTestCase {
         let decoder = JSONDecoder()
         let configuration = try decoder.decode(Configuration.self, from: data)
 
+        // when we say the config is debug, we should just get the base settings
         let debugSettings = try configuration.resolve(for: "action1", configuration: "debug", platform:"macOS")
-        XCTAssertEqual(debugSettings.compilerSettings(), ["-Xswiftc", "-testSwift"])
+        XCTAssertEqual(debugSettings.mappedSettings(for: "swift"), ["-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12"])
 
+        // when we say the config is release, we should get the extra optimisation setting
         let releaseSettings = try configuration.resolve(for: "action1", configuration: "release", platform:"macOS")
-        XCTAssertEqual(releaseSettings.compilerSettings(), ["-Xswiftc", "-testSwift", "-Xswiftc", "-extraReleaseOnly"])
+        XCTAssertEqual(releaseSettings.mappedSettings(for: "swift"), ["-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-O"])
     }
 
     func testSchemes() throws {
@@ -180,7 +234,8 @@ class BuilderTests: XCTestCase {
     static var allTests = [
         ("testMergingSettingLists", testMergingSettingLists),
         ("testMergingSettings", testMergingSettings),
-        ("testCompilerSetting", testCompilerSetting),
+        ("testSwiftSettingsMapping", testSwiftSettingsMapping),
+        ("testXCConfigSettingsMapping", testXCConfigSettingsMapping),
         ("testPlatformOverrides", testPlatformOverrides),
         ("testConfigurationOverrides", testConfigurationOverrides),
         ("testInheritanceChain", testInheritanceChain),

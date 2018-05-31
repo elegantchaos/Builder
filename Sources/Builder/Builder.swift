@@ -23,18 +23,20 @@ import Logger
  */
 
 public class Builder {
-    let command : String
-    let configuration : String
-    let output : Logger
-    let verbose : Logger
-    var environment : [String:String] = ProcessInfo.processInfo.environment
+    let command: String
+    let configuration: String
+    let platform: String
+    let output: Logger
+    let verbose: Logger
+    var environment: [String:String] = ProcessInfo.processInfo.environment
 
     lazy var swiftPath = findSwift()
     lazy var xcrunPath = findXCRun()
 
-    public init(command : String = "build", configuration : String = "debug", output: Logger, verbose: Logger) {
+    public init(command: String = "build", configuration: String = "debug", platform: String = Platform.currentPlatform(), output: Logger, verbose: Logger) {
         self.command = command
         self.configuration = configuration
+        self.platform = platform
         self.output = output
         self.verbose = verbose
 
@@ -217,6 +219,7 @@ public class Builder {
         output.log("\nScheme:\n- \(name).")
 
         for phase in action {
+            print(phase)
             setStage(phase.name)
             let command = phase.command
             switch (command) {
@@ -253,7 +256,11 @@ public class Builder {
             let _ = try swift("build", arguments: ["--product", configurationTarget])
         } catch Failure.failed(let stdout, let stderr) {
             if stderr == "error: no product named \'\(configurationTarget)\'\n" {
-                exec(swiftPath, arguments: Array(CommandLine.arguments[1...]))
+                var arguments = Array(CommandLine.arguments[1...])
+                if arguments.count == 0 {
+                    arguments.append("build")
+                }
+                exec(swiftPath, arguments: arguments)
             } else {
                 throw Failure.failed(output: stdout, error: stderr)
             }
@@ -268,12 +275,12 @@ public class Builder {
         let json = try run(configurePath)
         output.log("- parsing output")
         let configuration = try parse(configuration: json)
-        let configSettings = try configuration.resolve(for: command, configuration: self.configuration, platform: "macOS")
-        let settings = configSettings.compilerSettings()
+        let configSettings = try configuration.resolve(for: command, configuration: self.configuration, platform: platform)
+        let settings = configSettings.mappedSettings(for: "swift")
         environment["BUILDER_SWIFT_SETTINGS"] = settings.joined(separator: ",")
         if let values = configSettings.values {
             for item in values {
-                environment["BUILDER_SETTING:\(item.key.uppercased())"] = item.value
+                environment["BUILDER_SETTING:\(item.key.uppercased())"] = item.value.stringValue()
             }
         }
 

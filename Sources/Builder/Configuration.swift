@@ -4,75 +4,11 @@
 // For licensing terms, see http://elegantchaos.com/license/liberal/.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-typealias SettingList = [String]
-typealias SettingsDictionary = [String:String]
+import Foundation
 
-struct Inheritance : Decodable {
-    let name : String
-    let filter : [String]?
-}
 
-struct Settings : Decodable {
-    let common : SettingList?
-    let c : SettingList?
-    let cpp : SettingList?
-    let swift : SettingList?
-    let linker : SettingList?
-    let values : SettingsDictionary?
-    let inherits : [Inheritance]?
-    
-    func compilerSettings() -> [String] {
-        var args : [String] = []
-        swift?.forEach({ args.append(contentsOf: ["-Xswiftc", "-\($0)"])})
-        c?.forEach({ args.append(contentsOf: ["-Xc", "-\($0)"])})
-        cpp?.forEach({ args.append(contentsOf: ["-Xcpp", "-\($0)"])})
-        linker?.forEach({ args.append(contentsOf: ["-Xlinker", "-\($0)"])})
-        return args
-    }
-    
-    static func mergedLists(_ l1 : SettingList?, _ l2 : SettingList?) -> SettingList {
-        if l1 == nil {
-            if l2 == nil {
-                return []
-            } else {
-                return l2!
-            }
-        } else {
-            if l2 == nil {
-                return l1!
-            } else {
-                return l1! + l2!
-            }
-        }
-    }
 
-    static func mergedDictionaries(_ l1 : SettingsDictionary?, _ l2 : SettingsDictionary?) -> SettingsDictionary {
-        if l1 == nil {
-            if l2 == nil {
-                return [:]
-            } else {
-                return l2!
-            }
-        } else {
-            if l2 == nil {
-                return l1!
-            } else {
-                return l1!.merging(l2!, uniquingKeysWith: { (l,r) in return l })
-            }
-        }
-    }
 
-    static func mergedSettings(_ s1 : Settings, _ s2 : Settings) -> Settings {
-        return Settings(
-            common: mergedLists(s1.common, s2.common),
-            c: mergedLists(s1.c, s2.c),
-            cpp: mergedLists(s1.cpp, s2.cpp),
-            swift: mergedLists(s1.swift, s2.swift),
-            linker: mergedLists(s1.linker, s2.linker),
-            values: mergedDictionaries(s1.values, s2.values),
-            inherits: nil)
-    }
-}
 
 /**
  Data structure representing a phase of the build process.
