@@ -29,7 +29,7 @@ class BuilderTests: XCTestCase {
         XCTAssertEqual(s1s2["key1"]!, "value1")
         XCTAssertEqual(s1s2["key2"]!, "value2")
         XCTAssertEqual(s1s2["key3"]!, "value3")
-        
+
         let s2s1 = Settings.mergedSettings(s2, s1).values!
         XCTAssertEqual(s2s1["key1"]!, "value1/2")
         XCTAssertEqual(s1s2["key2"]!, "value2")
@@ -60,7 +60,7 @@ class BuilderTests: XCTestCase {
         let settings = try decoder.decode(Settings.self, from: data)
 
         let mapped = settings.mappedSettings(for: "swift")
-        XCTAssertEqual(mapped, ["-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-Dexample", "-Xswiftc", "-Onone"])
+        XCTAssertEqual(mapped, ["-Xswiftc", "-Dexample", "-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-Onone"])
     }
 
     func testXCConfigSettingsMapping() throws {
@@ -73,14 +73,14 @@ class BuilderTests: XCTestCase {
                 },
             }
             """
-        
+
         guard let data = settingsJSON.data(using: String.Encoding.utf8) else {
             throw Failure.decodingFailed
         }
-        
+
         let decoder = JSONDecoder()
         let settings = try decoder.decode(Settings.self, from: data)
-        
+
         let mapped = settings.mappedSettings(for: "xcconfig")
         XCTAssertEqual(mapped, ["MACOSX_DEPLOYMENT_TARGET = ", "10.12", "SWIFT_OPTIMIZATION_LEVEL = ", "-Onone"])
     }
@@ -161,7 +161,7 @@ class BuilderTests: XCTestCase {
 
         // we should get all the inherited settings
         let settings = try configuration.resolve(for: "action1", configuration: "debug", platform:"macOS")
-        XCTAssertEqual(settings.mappedSettings(for: "swift"), ["-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-Onone", "-Xswiftc", "-Dexample", "-Xswiftc", "-Dexample2"])
+        XCTAssertEqual(settings.mappedSettings(for: "swift"), ["-Xswiftc", "-Dexample", "-Xswiftc", "-Dexample2", "-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-Onone"])
     }
 
     func testConfigurationOverrides() throws {
