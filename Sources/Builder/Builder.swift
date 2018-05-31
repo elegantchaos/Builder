@@ -219,6 +219,7 @@ public class Builder {
         output.log("\nScheme:\n- \(name).")
 
         for phase in action {
+            print(phase)
             setStage(phase.name)
             let command = phase.command
             switch (command) {
@@ -255,7 +256,11 @@ public class Builder {
             let _ = try swift("build", arguments: ["--product", configurationTarget])
         } catch Failure.failed(let stdout, let stderr) {
             if stderr == "error: no product named \'\(configurationTarget)\'\n" {
-                exec(swiftPath, arguments: Array(CommandLine.arguments[1...]))
+                var arguments = Array(CommandLine.arguments[1...])
+                if arguments.count == 0 {
+                    arguments.append("build")
+                }
+                exec(swiftPath, arguments: arguments)
             } else {
                 throw Failure.failed(output: stdout, error: stderr)
             }
