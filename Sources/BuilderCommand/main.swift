@@ -6,6 +6,7 @@
 
 import Logger
 import Builder
+import Foundation
 
 let doc = """
 Build, test, and run SwiftPM packages.
@@ -45,20 +46,12 @@ do {
     let platform = args.option("platform", default:Platform.currentPlatform())
     let builder = Builder(command: command, configuration: configuration, platform: platform, output: output, verbose: verbose)
     try builder.execute(configurationTarget: "Configure")
-
-} catch Failure.decodingFailed {
-    output.log("Couldn't decode JSON")
-
-} catch Failure.failed(let stdout, let stderr) {
-    output.log(stdout ?? "Failure:")
-    output.log(stderr ?? "")
-
-} catch Failure.missingScheme(let name) {
-    output.log("Couldn't find scheme: \(name)")
-
-} catch Failure.unknownOption(let name) {
-    output.log("Tried to read unknown option: \(name)")
-
+} catch let error as Failure {
+    error.logAndExit(output)
+} catch let error as NSError {
+    output.log("Failed: \(error)")
+    exit(Int32(error.code))
 } catch {
     output.log("Failed: \(error)")
+    exit(-1)
 }
