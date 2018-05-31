@@ -4,11 +4,14 @@ language: swift
 sudo: required
 install:
 - wget https://swift.org/builds/swift-4.2-branch/xcode/swift-4.2-DEVELOPMENT-SNAPSHOT-2018-05-30-a/swift-4.2-DEVELOPMENT-SNAPSHOT-2018-05-30-a-osx.pkg
-- sudo installer -pkg swift-4.2-DEVELOPMENT-SNAPSHOT-2018-05-30-a/swift-4.2-DEVELOPMENT-SNAPSHOT-2018-05-30-a-osx.pkg -target /
-- swift package update
+- sudo installer -pkg swift-4.2-DEVELOPMENT-SNAPSHOT-2018-05-30-a-osx.pkg -target /
+- export PATH="/Library/Developer/Toolchains/swift-4.2-DEVELOPMENT-SNAPSHOT-2018-05-30-a-osx/":"$PATH"
+- ln -sf /Library/Developer/Toolchains/swift-4.2-DEVELOPMENT-SNAPSHOT-2018-05-30-a-osx/usr/bin/swift swift
+- ./swift --version
+- ./swift package update
 script:
-- swift test
-- swift run builder -h
+- ./swift test
+- ./swift run builder -h
 notifications:
   email: false
   slack:
