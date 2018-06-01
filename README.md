@@ -80,24 +80,29 @@ Of course, if you *do* have special requirements, such as tools that need to be 
 In this demo, the `Configure` target from the example project looks like this:
 
 ```swift
-
 import BuilderConfiguration
 
-let settings = Settings(schemes: [
-    .baseScheme(
-        swift: ["Dexample"],
+let settings = Settings(specs: [
+    .base(
+        values: [
+          .setting("definition", "example")
+        ],
         inherits: [
-            .scheme(name: "mac", filter: ["macOS"]),
-            .scheme(name: "debug", filter: ["debug"])
+            .spec(name: "mac", filter: ["macOS"]),
+            .spec(name: "debug", filter: ["debug"])
         ]
     ),
-    .scheme(
+    .spec(
         name: "mac",
-        swift: ["target", "x86_64-apple-macosx10.12"]
+        values: [
+          .setting("minimum-target", "macosx10.12"),
+        ]
     ),
-    .scheme(
+    .spec(
         name: "debug",
-        swift: ["Onone"]
+        values: [
+          .setting("optimisation", "none")
+        ]
     )
     ]
 )
@@ -108,7 +113,7 @@ let configuration = Configuration(
         .action(name:"build", phases:[
             .toolPhase(name:"Preparing", tool: "BuilderToolExample"),
             .buildPhase(name:"Building", target:"BuilderExample"),
-            .toolPhase(name:"Packaging", tool: "BuilderToolExample", arguments:["blah", "waffle"]),
+            .toolPhase(name:"Packaging", tool: "BuilderToolExample", arguments:["--show-environment", "--show-arguments"]),
             ]),
         .action(name:"test", phases:[
             .testPhase(name:"Testing", target:"BuilderExample"),
@@ -129,12 +134,13 @@ There are lots of ways to accomplish this goal: just writing code to print the J
 
 In this example we make use of some utility code defined in the `BuilderConfiguration` module[^1], which lets us write `Settings` and `Configuration` definitions in a similar way to SwiftPM's Package descriptions.
 
-In the `Settings` part we supply a basic settings scheme which always adds a single Swift setting: `-Dexample`. We also define a couple of other settings schemes which are optionally mixed in, depending on filters. If the platform is `macOS`, we mix in a target setting. If the configuration is `debug` we mix in an optimiser setting.
+In the `Settings` part we supply a basic settings scheme which always adds a single Swift setting: `"definition" : "example"`.
+
+We also define a couple of other settings schemes which are optionally mixed in, depending on filters. If the platform is `macOS`, we mix in a target setting. If the configuration is `debug` we mix in an optimiser setting.
 
 In the `Configuration` part we describe three build schemes: "build", "test" and "run". These list the build phases to execute when builder is invoked with the `build`, `test` or `run` actions[^2].
 
 In the "build" phase, we see an example of calling out to an external tool: `BuilderToolExample`. This tool is itself another external dependency.
-
 
 Hopefully this example illustrates a few things:
 
@@ -145,6 +151,26 @@ Hopefully this example illustrates a few things:
 [^1]: This module is an external dependency, defined in a different git repo, and listed in our manifest in the normal way.
 
 [^2]: These action names are actually arbitrary - we could call them anything we like. If `builder` fails to find a `Configure` target however, it will fall back to just calling `swift`, and will pass the action to it as a first parameter. For this reason, it makes sense to use names like "build" and "test" if they correspond to SwiftPM actions.
+
+### Mapping Settings
+
+In the description above, we skirted over the details of settings.
+
+How does a setting such as `"minimum-target" : "macosx10.12"` get passed along to an actual tool?
+
+The answer is that there's a translation layer, and it's a per-tool translation.
+
+For the swift compiler, the setting above will be translated to: `-Xswiftc, -target, -Xswiftc, x86_64-apple-macosx10.12`.
+
+There are other tools, however, which might also want to know about the minimum target.
+
+A tool that generates an xcconfig file could translate the same setting to: `MACOSX_DEPLOYMENT_TARGET = 10.12`.
+
+An application bundling tool could take the value `10.12` and insert it into the `LSMinimumSystemVersion` key of the Info.plist file.
+
+And so on.
+
+So where do these settings maps live? Right now, they're very minimal, and are hard-coded into the builder binary. In future versions of builder they will be external, and extensible, so that builder can be taught about new settings and new tools, in a flexible manner.
 
 ## Flaws
 
