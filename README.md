@@ -54,10 +54,10 @@ Builder looks for an action definition matching the name that was supplied on th
 
 These commands can consist of:
 
-- build: build a product, `swift build`, applying the build settings from the configuration
-- test: test a product using `swift test`, applying the build settings from the configuration
-- run: run a product using `swift run`, applying the build settings from the configuration
-- action: perform another nested action
+- *build*: build a product using `swift build`, applying the build settings from the configuration
+- *test*: test a product using `swift test`, applying the build settings from the configuration
+- *run*: run a product using `swift run`, applying the build settings from the configuration
+- *action*: perform another nested action
 - *anything else*: treat the named command as a dependency; build and run it with `swift run`, passing the arguments specified in the configuration
 
 The idea behind this approach is that:
