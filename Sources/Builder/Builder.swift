@@ -29,6 +29,7 @@ public class Builder {
     let output: Logger
     let verbose: Logger
     let arguments: [String]
+    let settings = SettingsManager()
     var environment: [String:String] = ProcessInfo.processInfo.environment
 
     lazy var swiftPath = findSwift()
@@ -42,7 +43,17 @@ public class Builder {
         self.verbose = verbose
         self.arguments = arguments
 
+        self.loadSettingsMappings()
         self.populateEnvironment()
+    }
+
+    /**
+        Load settings mappings for tools.
+    */
+
+    func loadSettingsMappings() {
+        settings.addMapper(SettingsMapper(tool: "swift"))
+        settings.addMapper(SettingsMapper(tool: "xcconfig"))
     }
 
     /**
@@ -285,8 +296,8 @@ public class Builder {
         output.log("- parsing output")
         let configuration = try parse(configuration: json)
         let configSettings = try configuration.resolve(for: command, configuration: self.configuration, platform: platform)
-        let settings = configSettings.mappedSettings(for: "swift")
-        environment["BUILDER_SWIFT_SETTINGS"] = settings.joined(separator: ",")
+        let mapped = settings.mappedSettings(tool: "swift", settings: configSettings)
+        environment["BUILDER_SWIFT_SETTINGS"] = mapped.joined(separator: ",")
         if let values = configSettings.values {
             for item in values {
                 environment["BUILDER_SETTING:\(item.key.uppercased())"] = item.value.stringValue()
@@ -294,7 +305,7 @@ public class Builder {
         }
 
         // execute the action associated with the primary command we were passed (run/build/test/etc)
-        try execute(action: command, configuration: configuration, settings: settings)
+        try execute(action: command, configuration: configuration, settings: mapped)
 
         output.log("\nDone.\n\n")
     }

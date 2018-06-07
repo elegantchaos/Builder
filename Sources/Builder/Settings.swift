@@ -21,52 +21,6 @@ struct Settings : Decodable {
     let values : SettingsDictionary?
     let inherits : [Inheritance]?
 
-    func mappedSettings(for name: String, value: SettingsValue, mapping: [String:Any]) -> [String] {
-        var result: [String] = []
-        if let prefix = mapping["prefix"] as? [String] {
-            result.append(contentsOf: prefix)
-        }
-
-        if let valueMappings = mapping["values"] as? [String:Any] {
-            for value in value.listValue() {
-                if let value = valueMappings[value] as? String {
-                    result.append(value)
-                } else if let values = valueMappings[value] as? [String] {
-                    result.append(contentsOf: values)
-                }
-            }
-        } else if let rawValues = mapping["rawValues"] as? [String] {
-            var prefixValues = rawValues
-            prefixValues.removeLast()
-            if let lastValue = rawValues.last {
-                for value in value.listValue() {
-                    result.append(contentsOf: prefixValues)
-                    result.append(lastValue.appending(value))
-                }
-            }
-        }
-
-        return result
-    }
-
-    func mappedSettings(for tool: String) -> [String] {
-        var args : [String] = []
-
-        if let values = values {
-            let sortedKeys = values.keys.sorted()
-            for key in sortedKeys {
-                let value = values[key]!
-                if let mapping = settingsMapping[key] as? [String:Any] {
-                    if let toolMapping = mapping[tool] as? [String:Any] {
-                        args.append(contentsOf: mappedSettings(for: key, value: value, mapping: toolMapping))
-                    }
-                }
-            }
-        }
-
-        return args
-    }
-
     static func mergedLists(_ l1 : SettingList?, _ l2 : SettingList?) -> SettingList {
         if l1 == nil {
             if l2 == nil {
