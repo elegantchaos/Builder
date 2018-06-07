@@ -50,8 +50,8 @@ public class Builder {
     */
 
     func loadSettingsMappings() {
-        settings.addMapper(SettingsMapper(tool: "swift"))
-        settings.addMapper(SettingsMapper(tool: "xcconfig"))
+        settings.addMapper(SwiftSettingsMapper())
+        settings.addMapper(XCConfigSettingsMapper())
     }
 
     /**

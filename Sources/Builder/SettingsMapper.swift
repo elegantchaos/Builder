@@ -5,61 +5,23 @@
 
 import Foundation
 
+
 class SettingsMapper {
+    typealias Item = [String:Any]
+    typealias Items = [String:Item]
 
     let tool : String
-    var items : [String:[String:Any]] = [:]
+    var items : Items
 
-    init(tool: String) {
+    init(tool: String, items: Items = [:]) {
         self.tool = tool
+        self.items = items
     }
 
 }
 
 class SettingsManager {
-    var mappings: [String:[String:[String:Any]]] = [
-        "minimum-target": [
-            "swift" : [
-                "prefix": ["-Xswiftc", "-target", "-Xswiftc"],
-                "values": [
-                    "macosx10.12" : "x86_64-apple-macosx10.12",
-                    "macosx10.13" : "x86_64-apple-macosx10.13"
-                ]
-            ],
-            "xcconfig": [
-                "prefix": ["MACOSX_DEPLOYMENT_TARGET = "],
-                "values" : [
-                    "macosx10.12": "10.12",
-                    "macosx10.13": "10.13"
-                ]
-            ]
-        ],
-        "optimisation": [
-            "swift" : [
-                "prefix": ["-Xswiftc"],
-                "values": [
-                    "none": "-Onone",
-                    "size": "-Osize",
-                    "speed": "-O"
-                ]
-            ],
-            "xcconfig" : [
-                "prefix" : ["SWIFT_OPTIMIZATION_LEVEL = "],
-                "values": [
-                    "none": "-Onone",
-                    "size": "-Osize",
-                    "speed": "-O"
-                ]
-            ]
-        ],
-
-        "definition": [
-            "swift" : [
-                "rawValues" : ["-Xswiftc", "-D"]
-            ],
-        ]
-    ]
-
+    var mappings: [String:SettingsMapper.Items] = [:]
     var mappers: [SettingsMapper] = []
 
     func addMapper(_ mapper: SettingsMapper) {
