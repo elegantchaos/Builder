@@ -66,4 +66,14 @@ public struct Arguments {
         return `default`
     }
 
+    /**
+     Return arguments that appeared after --.
+     */
+
+    public func others(_ name: String = "other") -> [String] {
+        if let value = parsed["<\(name)>"] as? [String] {
+            return value
+        }
+        return []
+    }
 }

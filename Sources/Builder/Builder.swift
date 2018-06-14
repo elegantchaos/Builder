@@ -28,17 +28,19 @@ public class Builder {
     let platform: String
     let output: Logger
     let verbose: Logger
+    let arguments: [String]
     var environment: [String:String] = ProcessInfo.processInfo.environment
 
     lazy var swiftPath = findSwift()
     lazy var xcrunPath = findXCRun()
 
-    public init(command: String = "build", configuration: String = "debug", platform: String = Platform.currentPlatform(), output: Logger, verbose: Logger) {
+    public init(command: String = "build", configuration: String = "debug", platform: String = Platform.currentPlatform(), output: Logger, verbose: Logger, arguments: [String]) {
         self.command = command
         self.configuration = configuration
         self.platform = platform
         self.output = output
         self.verbose = verbose
+        self.arguments = arguments
 
         self.populateEnvironment()
     }
@@ -219,7 +221,6 @@ public class Builder {
         output.log("\nScheme:\n- \(name).")
 
         for phase in action {
-            print(phase)
             setStage(phase.name)
             let command = phase.command
             switch (command) {
@@ -228,8 +229,16 @@ public class Builder {
                 let toolOutput = try swift("test", arguments: ["--configuration", self.configuration] + settings)
                 output.log("- tested \(product).\n\n\(toolOutput)")
             case "run":
-                let product = phase.arguments[0]
-                let toolOutput = try swift("run", arguments: [product, "--configuration", self.configuration] + settings)
+                var args: [String] = []
+                var product = "default product"
+                args.append(contentsOf: ["--configuration", self.configuration])
+                args.append(contentsOf: settings)
+                if phase.arguments.count > 0 {
+                    product = phase.arguments[0]
+                    args.append(product)
+                }
+                args.append(contentsOf: arguments)
+                let toolOutput = try swift("run", arguments: args)
                 output.log("- ran \(product).\n\n\(toolOutput)")
             case "build":
                 let product = phase.arguments[0]

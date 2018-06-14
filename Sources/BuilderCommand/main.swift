@@ -44,7 +44,8 @@ let command = args.argument("action", default: "build")
 do {
     let configuration = try args.option("configuration")
     let platform = args.option("platform", default:Platform.currentPlatform())
-    let builder = Builder(command: command, configuration: configuration, platform: platform, output: output, verbose: verbose)
+    let otherArguments = args.others()
+    let builder = Builder(command: command, configuration: configuration, platform: platform, output: output, verbose: verbose, arguments:otherArguments)
     try builder.execute(configurationTarget: "Configure")
 } catch let error as Failure {
     error.logAndExit(output)
