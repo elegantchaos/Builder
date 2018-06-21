@@ -59,6 +59,7 @@ class BuilderTests: XCTestCase {
         let decoder = JSONDecoder()
         let settings = try decoder.decode(Settings.self, from: data)
         let manager = SettingsManager()
+        manager.addMapper(SwiftSettingsMapper())
         let mapped = manager.mappedSettings(tool: "swift", settings:settings)
         XCTAssertEqual(mapped, ["-Xswiftc", "-Dexample", "-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-Onone"])
     }
@@ -82,6 +83,7 @@ class BuilderTests: XCTestCase {
         let settings = try decoder.decode(Settings.self, from: data)
 
         let manager = SettingsManager()
+        manager.addMapper(XCConfigSettingsMapper())
         let mapped = manager.mappedSettings(tool: "xcconfig", settings:settings)
         XCTAssertEqual(mapped, ["MACOSX_DEPLOYMENT_TARGET = ", "10.12", "SWIFT_OPTIMIZATION_LEVEL = ", "-Onone"])
     }
@@ -115,6 +117,7 @@ class BuilderTests: XCTestCase {
         let decoder = JSONDecoder()
         let configuration = try decoder.decode(Configuration.self, from: data)
         let manager = SettingsManager()
+        manager.addMapper(SwiftSettingsMapper())
 
         // when we say the platform is macOS, we should get the extra settings mixed in from "extraMacSettigns"
         let macSettings = try configuration.resolve(for: "action1", configuration: "debug", platform:"macOS")
@@ -166,6 +169,7 @@ class BuilderTests: XCTestCase {
         // we should get all the inherited settings
         let settings = try configuration.resolve(for: "action1", configuration: "debug", platform:"macOS")
         let manager = SettingsManager()
+        manager.addMapper(SwiftSettingsMapper())
         let mapped = manager.mappedSettings(tool: "swift", settings: settings)
         XCTAssertEqual(mapped, ["-Xswiftc", "-Dexample", "-Xswiftc", "-Dexample2", "-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-Onone"])
     }
