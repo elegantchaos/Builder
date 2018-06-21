@@ -295,21 +295,7 @@ public class Builder {
                 output.log("- ran \(product).\n\n\(toolOutput)")
             case "metadata":
                 let product = phase.arguments[0]
-                let build = environment["BUILDER_BUILD"] ?? "unknown"
-                let commit = environment["BUILDER_GIT_COMMIT"] ?? "unknown"
-                let tags = environment["BUILDER_GIT_TAGS"] ?? ""
-                let metadata = """
-                    struct Metadata {
-                        let version: String
-                        let build: String
-                        let tags: String
-                        let commit: String
-                    }
-
-                    let \(product)Metadata = Metadata(version: "1.0", build: "\(build)", tags: "\(tags)", commit: "\(commit)")
-                    """
-                print(metadata)
-
+                writeMetadata(product: product)
             case "build":
                 let product = phase.arguments[0]
                 let _ = try swift("build", arguments: ["--product", product, "--configuration", self.configuration] + settings)
@@ -369,4 +355,26 @@ public class Builder {
         output.log("\nDone.\n\n")
     }
 
+    func writeMetadata(product: String) {
+        let build = environment["BUILDER_BUILD"] ?? "unknown"
+        let commit = environment["BUILDER_GIT_COMMIT"] ?? "unknown"
+        let tags = environment["BUILDER_GIT_TAGS"] ?? ""
+        let metadata = """
+            struct Metadata {
+                let version: String
+                let build: String
+                let tags: String
+                let commit: String
+            }
+
+            let \(product)Metadata = Metadata(version: "1.0", build: "\(build)", tags: "\(tags)", commit: "\(commit)")
+            """
+        let metadataURL = URL(fileURLWithPath: "./Sources").appendingPathComponent(product).appendingPathComponent("Metadata.swift")
+        do {
+            try metadata.write(to: metadataURL, atomically: true, encoding: String.Encoding.utf8)
+        } catch {
+            print(metadataURL)
+            print(error)
+        }
+    }
 }
