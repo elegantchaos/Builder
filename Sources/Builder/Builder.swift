@@ -34,6 +34,7 @@ public class Builder {
 
     lazy var swiftPath = findSwift()
     lazy var xcrunPath = findXCRun()
+    lazy var gitPath = findGit()
 
     public init(command: String = "build", configuration: String = "debug", platform: String = Platform.currentPlatform(), output: Logger, verbose: Logger, arguments: [String]) {
         self.command = command
@@ -86,6 +87,18 @@ public class Builder {
                 }
             }
         }
+
+        if let commit = try? git("rev-parse", arguments: ["HEAD"]) {
+            self.environment["BUILDER_GIT_COMMIT"] = commit
+            print(commit)
+
+            if let tags = try? git("describe", arguments: ["--tags"]) {
+                self.environment["BUILDER_GIT_TAGS"] = tags
+                print(tags)
+            }
+        }
+
+
     }
 
     /**
@@ -118,6 +131,21 @@ public class Builder {
         return path
     }
 
+
+        /**
+         Return the path to the git binary.
+         */
+
+        func findGit() -> String {
+            let path : String
+            do {
+                path = try run("/usr/bin/which", arguments:["git"]).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            } catch {
+                path = "/usr/bin/git"
+            }
+
+            return path
+        }
 
     /**
      Invoke a command and some optional arguments.
@@ -191,8 +219,19 @@ public class Builder {
      */
 
     func xcrun(_ command : String, arguments: [String] = []) throws -> String {
-        verbose.log("running swift \(command)")
+        verbose.log("running xcrun \(command)")
         return try run(xcrunPath, arguments: [command] + arguments).trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /**
+    Invoke `git` with a command and some optional arguments.
+     On success, returns the captured output from stdout.
+     On failure, throws an error.
+     */
+
+    func git(_ command : String, arguments: [String] = []) throws -> String {
+        verbose.log("running git \(command)")
+        return try run(gitPath, arguments: [command] + arguments).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /**
