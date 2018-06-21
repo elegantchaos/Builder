@@ -58,8 +58,9 @@ class BuilderTests: XCTestCase {
 
         let decoder = JSONDecoder()
         let settings = try decoder.decode(Settings.self, from: data)
-
-        let mapped = settings.mappedSettings(for: "swift")
+        let manager = SettingsManager()
+        manager.addMapper(SwiftSettingsMapper())
+        let mapped = manager.mappedSettings(tool: "swift", settings:settings)
         XCTAssertEqual(mapped, ["-Xswiftc", "-Dexample", "-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-Onone"])
     }
 
@@ -81,7 +82,9 @@ class BuilderTests: XCTestCase {
         let decoder = JSONDecoder()
         let settings = try decoder.decode(Settings.self, from: data)
 
-        let mapped = settings.mappedSettings(for: "xcconfig")
+        let manager = SettingsManager()
+        manager.addMapper(XCConfigSettingsMapper())
+        let mapped = manager.mappedSettings(tool: "xcconfig", settings:settings)
         XCTAssertEqual(mapped, ["MACOSX_DEPLOYMENT_TARGET = ", "10.12", "SWIFT_OPTIMIZATION_LEVEL = ", "-Onone"])
     }
 
@@ -113,14 +116,18 @@ class BuilderTests: XCTestCase {
 
         let decoder = JSONDecoder()
         let configuration = try decoder.decode(Configuration.self, from: data)
+        let manager = SettingsManager()
+        manager.addMapper(SwiftSettingsMapper())
 
         // when we say the platform is macOS, we should get the extra settings mixed in from "extraMacSettigns"
         let macSettings = try configuration.resolve(for: "action1", configuration: "debug", platform:"macOS")
-        XCTAssertEqual(macSettings.mappedSettings(for: "swift"), ["-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-Onone"])
+        let macMapped = manager.mappedSettings(tool: "swift", settings:macSettings)
+        XCTAssertEqual(macMapped, ["-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-Onone"])
 
         // when we say the platform is linux, we should just get the base settings
         let linuxSettings = try configuration.resolve(for: "action1", configuration: "debug", platform:"linux")
-        XCTAssertEqual(linuxSettings.mappedSettings(for: "swift"), ["-Xswiftc", "-Onone"])
+        let linuxMapped = manager.mappedSettings(tool: "swift", settings:linuxSettings)
+        XCTAssertEqual(linuxMapped, ["-Xswiftc", "-Onone"])
 
     }
 
@@ -161,7 +168,10 @@ class BuilderTests: XCTestCase {
 
         // we should get all the inherited settings
         let settings = try configuration.resolve(for: "action1", configuration: "debug", platform:"macOS")
-        XCTAssertEqual(settings.mappedSettings(for: "swift"), ["-Xswiftc", "-Dexample", "-Xswiftc", "-Dexample2", "-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-Onone"])
+        let manager = SettingsManager()
+        manager.addMapper(SwiftSettingsMapper())
+        let mapped = manager.mappedSettings(tool: "swift", settings: settings)
+        XCTAssertEqual(mapped, ["-Xswiftc", "-Dexample", "-Xswiftc", "-Dexample2", "-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-Onone"])
     }
 
     func testConfigurationOverrides() throws {
@@ -193,13 +203,18 @@ class BuilderTests: XCTestCase {
         let decoder = JSONDecoder()
         let configuration = try decoder.decode(Configuration.self, from: data)
 
+        let manager = SettingsManager()
+        manager.addMapper(SwiftSettingsMapper())
+
         // when we say the config is debug, we should just get the base settings
         let debugSettings = try configuration.resolve(for: "action1", configuration: "debug", platform:"macOS")
-        XCTAssertEqual(debugSettings.mappedSettings(for: "swift"), ["-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12"])
+        let debugMapped = manager.mappedSettings(tool: "swift", settings: debugSettings)
+        XCTAssertEqual(debugMapped, ["-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12"])
 
         // when we say the config is release, we should get the extra optimisation setting
         let releaseSettings = try configuration.resolve(for: "action1", configuration: "release", platform:"macOS")
-        XCTAssertEqual(releaseSettings.mappedSettings(for: "swift"), ["-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-O"])
+        let releaseMapped = manager.mappedSettings(tool: "swift", settings: releaseSettings)
+        XCTAssertEqual(releaseMapped, ["-Xswiftc", "-target", "-Xswiftc", "x86_64-apple-macosx10.12", "-Xswiftc", "-O"])
     }
 
     func testSchemes() throws {

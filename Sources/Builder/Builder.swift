@@ -29,10 +29,12 @@ public class Builder {
     let output: Logger
     let verbose: Logger
     let arguments: [String]
+    let settings = SettingsManager()
     var environment: [String:String] = ProcessInfo.processInfo.environment
 
     lazy var swiftPath = findSwift()
     lazy var xcrunPath = findXCRun()
+    lazy var gitPath = findGit()
 
     public init(command: String = "build", configuration: String = "debug", platform: String = Platform.currentPlatform(), output: Logger, verbose: Logger, arguments: [String]) {
         self.command = command
@@ -42,7 +44,17 @@ public class Builder {
         self.verbose = verbose
         self.arguments = arguments
 
+        self.loadSettingsMappings()
         self.populateEnvironment()
+    }
+
+    /**
+        Load settings mappings for tools.
+    */
+
+    func loadSettingsMappings() {
+        settings.addMapper(SwiftSettingsMapper())
+        settings.addMapper(XCConfigSettingsMapper())
     }
 
     /**
@@ -75,6 +87,21 @@ public class Builder {
                 }
             }
         }
+
+        if let commit = try? git("rev-parse", arguments: ["HEAD"]) {
+            self.environment["BUILDER_GIT_COMMIT"] = commit
+
+            if let tags = try? git("describe", arguments: ["--all"]) {
+                self.environment["BUILDER_GIT_TAGS"] = tags
+            }
+
+            if let commits = try? git("log", arguments: ["--oneline"]) {
+                let lines = commits.split(separator: "\n")
+                self.environment["BUILDER_BUILD"] = String(lines.count)
+            }
+        }
+
+
     }
 
     /**
@@ -107,6 +134,21 @@ public class Builder {
         return path
     }
 
+
+        /**
+         Return the path to the git binary.
+         */
+
+        func findGit() -> String {
+            let path : String
+            do {
+                path = try run("/usr/bin/which", arguments:["git"]).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            } catch {
+                path = "/usr/bin/git"
+            }
+
+            return path
+        }
 
     /**
      Invoke a command and some optional arguments.
@@ -180,8 +222,19 @@ public class Builder {
      */
 
     func xcrun(_ command : String, arguments: [String] = []) throws -> String {
-        verbose.log("running swift \(command)")
+        verbose.log("running xcrun \(command)")
         return try run(xcrunPath, arguments: [command] + arguments).trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /**
+    Invoke `git` with a command and some optional arguments.
+     On success, returns the captured output from stdout.
+     On failure, throws an error.
+     */
+
+    func git(_ command : String, arguments: [String] = []) throws -> String {
+        verbose.log("running git \(command)")
+        return try run(gitPath, arguments: [command] + arguments).trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /**
@@ -240,6 +293,9 @@ public class Builder {
                 args.append(contentsOf: arguments)
                 let toolOutput = try swift("run", arguments: args)
                 output.log("- ran \(product).\n\n\(toolOutput)")
+            case "metadata":
+                let product = phase.arguments[0]
+                writeMetadata(product: product)
             case "build":
                 let product = phase.arguments[0]
                 let _ = try swift("build", arguments: ["--product", product, "--configuration", self.configuration] + settings)
@@ -285,8 +341,8 @@ public class Builder {
         output.log("- parsing output")
         let configuration = try parse(configuration: json)
         let configSettings = try configuration.resolve(for: command, configuration: self.configuration, platform: platform)
-        let settings = configSettings.mappedSettings(for: "swift")
-        environment["BUILDER_SWIFT_SETTINGS"] = settings.joined(separator: ",")
+        let mapped = settings.mappedSettings(tool: "swift", settings: configSettings)
+        environment["BUILDER_SWIFT_SETTINGS"] = mapped.joined(separator: ",")
         if let values = configSettings.values {
             for item in values {
                 environment["BUILDER_SETTING:\(item.key.uppercased())"] = item.value.stringValue()
@@ -294,9 +350,31 @@ public class Builder {
         }
 
         // execute the action associated with the primary command we were passed (run/build/test/etc)
-        try execute(action: command, configuration: configuration, settings: settings)
+        try execute(action: command, configuration: configuration, settings: mapped)
 
         output.log("\nDone.\n\n")
     }
 
+    func writeMetadata(product: String) {
+        let build = environment["BUILDER_BUILD"] ?? "unknown"
+        let commit = environment["BUILDER_GIT_COMMIT"] ?? "unknown"
+        let tags = environment["BUILDER_GIT_TAGS"] ?? ""
+        let metadata = """
+            struct Metadata {
+                let version: String
+                let build: String
+                let tags: String
+                let commit: String
+            }
+
+            let \(product)Metadata = Metadata(version: "1.0", build: "\(build)", tags: "\(tags)", commit: "\(commit)")
+            """
+        let metadataURL = URL(fileURLWithPath: "./Sources").appendingPathComponent(product).appendingPathComponent("Metadata.swift")
+        do {
+            try metadata.write(to: metadataURL, atomically: true, encoding: String.Encoding.utf8)
+        } catch {
+            print(metadataURL)
+            print(error)
+        }
+    }
 }
