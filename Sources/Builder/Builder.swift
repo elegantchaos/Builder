@@ -90,11 +90,14 @@ public class Builder {
 
         if let commit = try? git("rev-parse", arguments: ["HEAD"]) {
             self.environment["BUILDER_GIT_COMMIT"] = commit
-            print(commit)
 
-            if let tags = try? git("describe", arguments: ["--tags"]) {
+            if let tags = try? git("describe", arguments: ["--all"]) {
                 self.environment["BUILDER_GIT_TAGS"] = tags
-                print(tags)
+            }
+
+            if let commits = try? git("log", arguments: ["--oneline"]) {
+                let lines = commits.split(separator: "\n")
+                self.environment["BUILDER_BUILD"] = String(lines.count)
             }
         }
 
@@ -290,6 +293,23 @@ public class Builder {
                 args.append(contentsOf: arguments)
                 let toolOutput = try swift("run", arguments: args)
                 output.log("- ran \(product).\n\n\(toolOutput)")
+            case "metadata":
+                let product = phase.arguments[0]
+                let build = environment["BUILDER_BUILD"] ?? "unknown"
+                let commit = environment["BUILDER_GIT_COMMIT"] ?? "unknown"
+                let tags = environment["BUILDER_GIT_TAGS"] ?? ""
+                let metadata = """
+                    struct Metadata {
+                        let version: String
+                        let build: String
+                        let tags: String
+                        let commit: String
+                    }
+
+                    let \(product)Metadata = Metadata(version: "1.0", build: "\(build)", tags: "\(tags)", commit: "\(commit)")
+                    """
+                print(metadata)
+
             case "build":
                 let product = phase.arguments[0]
                 let _ = try swift("build", arguments: ["--product", product, "--configuration", self.configuration] + settings)
