@@ -93,8 +93,11 @@ public class Builder {
 
             if let tags = try? git("describe", arguments: ["--all"]) {
                 self.environment["BUILDER_GIT_TAGS"] = tags
-                for match in matches(for: "tags/(\\d+)\\.(\\d+)\\.(\\d+)", in: tags) {
-                    print(match)
+                let versions: [SemanticVersion] = tags.matches(for: "tags/(\\d+)\\.(\\d+)\\.(\\d+)").map { (match: [String]) in
+                    SemanticVersion(major: match[1], minor: match[2], patch: match[3])!
+                }
+                if let version = versions.sorted(by: <).first {
+                    self.environment["BUILDER_VERSION"] = version.text
                 }
             }
 
@@ -107,23 +110,6 @@ public class Builder {
 
     }
 
-    func matches(for regex: String, in text: String) -> [[String]] {
-
-        do {
-            let regex = try NSRegularExpression(pattern: regex)
-            let results = regex.matches(in: text, range: NSRange(text.startIndex..., in: text))
-            return results.map {
-                var items: [String] = []
-                for n in 0..<$0.numberOfRanges {
-                    items.append(String(text[Range($0.range(at:n), in: text)!]))
-                }
-                return items
-            }
-        } catch let error {
-            print("invalid regex: \(error.localizedDescription)")
-            return []
-        }
-    }
 
     /**
      Return the path to the swift binary.
@@ -380,6 +366,7 @@ public class Builder {
         let build = environment["BUILDER_BUILD"] ?? "unknown"
         let commit = environment["BUILDER_GIT_COMMIT"] ?? "unknown"
         let tags = environment["BUILDER_GIT_TAGS"] ?? ""
+        let version = environment["BUILDER_VERSION"] ?? "0.0.0"
         let metadata = """
             struct Metadata {
                 let version: String
@@ -388,7 +375,7 @@ public class Builder {
                 let commit: String
             }
 
-            let \(product)Metadata = Metadata(version: "1.0", build: "\(build)", tags: "\(tags)", commit: "\(commit)")
+            let \(product)Metadata = Metadata(version: "\(version)", build: "\(build)", tags: "\(tags)", commit: "\(commit)")
             """
         let metadataURL = URL(fileURLWithPath: "./Sources").appendingPathComponent(product).appendingPathComponent("Metadata.swift")
         do {
