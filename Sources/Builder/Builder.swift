@@ -93,6 +93,9 @@ public class Builder {
 
             if let tags = try? git("describe", arguments: ["--all"]) {
                 self.environment["BUILDER_GIT_TAGS"] = tags
+                for match in matches(for: "tags/(\\d+)\\.(\\d+)\\.(\\d+)", in: tags) {
+                    print(match)
+                }
             }
 
             if let commits = try? git("log", arguments: ["--oneline"]) {
@@ -102,6 +105,24 @@ public class Builder {
         }
 
 
+    }
+
+    func matches(for regex: String, in text: String) -> [[String]] {
+
+        do {
+            let regex = try NSRegularExpression(pattern: regex)
+            let results = regex.matches(in: text, range: NSRange(text.startIndex..., in: text))
+            return results.map {
+                var items: [String] = []
+                for n in 0..<$0.numberOfRanges {
+                    items.append(String(text[Range($0.range(at:n), in: text)!]))
+                }
+                return items
+            }
+        } catch let error {
+            print("invalid regex: \(error.localizedDescription)")
+            return []
+        }
     }
 
     /**
