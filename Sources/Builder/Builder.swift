@@ -93,12 +93,17 @@ public class Builder {
 
             if let tags = try? git("describe", arguments: ["--all"]) {
                 self.environment["BUILDER_GIT_TAGS"] = tags
-                let versions: [SemanticVersion] = tags.matches(for: "tags/(\\d+)\\.(\\d+)\\.(\\d+)").map { (match: [String]) in
-                    SemanticVersion(major: match[1], minor: match[2], patch: match[3])!
-                }
-                if let version = versions.sorted(by: <).first {
-                    self.environment["BUILDER_VERSION"] = version.text
-                }
+                // let versions: [SemanticVersion] = tags.matches(for: "tags/(\\d+)\\.(\\d+)\\.(\\d+)").map { (match: [String]) in
+                //     SemanticVersion(major: match[1], minor: match[2], patch: match[3])!
+                // }
+                // if let version = versions.sorted(by: <).first {
+                //     self.environment["BUILDER_VERSION"] = version.text
+                // } else {
+                // }
+            }
+
+            if let version = try? git("describe", arguments: ["--tags"]) {
+                self.environment["BUILDER_VERSION"] = version
             }
 
             if let commits = try? git("log", arguments: ["--oneline"]) {
