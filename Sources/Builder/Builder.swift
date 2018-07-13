@@ -31,7 +31,8 @@ public class Builder {
     let arguments: [String]
     let settings = SettingsManager()
     var environment: [String:String] = ProcessInfo.processInfo.environment
-
+    var indent = ""
+    var level = 0
     lazy var swiftPath = findSwift()
     lazy var xcrunPath = findXCRun()
     lazy var gitPath = findGit()
@@ -267,9 +268,10 @@ public class Builder {
     /**
      Announce the build stage.
     */
+
     internal func setStage(_ stage : String, announce : Bool = true) {
         if announce {
-            output.log("\n\(stage):")
+            output.log("\(indent)\(stage).")
         }
         environment["BUILDER_STAGE"] = stage.lowercased()
     }
@@ -283,43 +285,29 @@ public class Builder {
             throw Failure.missingScheme(name: name)
         }
 
-        output.log("\nScheme:\n- \(name).")
+        level += 1
+        if level > 1 {
+            indent = "- ".padding(toLength: (level - 1) * 2, withPad: " ", startingAt: 0)
+        }
+
+        verbose.log("\(indent)Action: \(name).")
 
         for phase in action {
             setStage(phase.name)
             let command = phase.command
+            let builderAction: BuilderAction
             switch (command) {
-            case "test":
-                let product = phase.arguments[0]
-                let toolOutput = try swift("test", arguments: ["--configuration", self.configuration] + settings)
-                output.log("- tested \(product).\n\n\(toolOutput)")
-            case "run":
-                var args: [String] = []
-                var product = "default product"
-                args.append(contentsOf: ["--configuration", self.configuration])
-                args.append(contentsOf: settings)
-                if phase.arguments.count > 0 {
-                    product = phase.arguments[0]
-                    args.append(product)
-                }
-                args.append(contentsOf: arguments)
-                let toolOutput = try swift("run", arguments: args)
-                output.log("- ran \(product).\n\n\(toolOutput)")
-            case "metadata":
-                let product = phase.arguments[0]
-                writeMetadata(product: product)
-            case "build":
-                let product = phase.arguments[0]
-                let _ = try swift("build", arguments: ["--product", product, "--configuration", self.configuration] + settings)
-                output.log("- built \(product).")
-            case "action":
-                let action = phase.arguments[0]
-                try execute(action: action, configuration: configuration, settings: settings)
-            default:
-                let toolOutput = try swift("run", arguments: settings + [command] + phase.arguments)
-                output.log("- ran \(command): \(toolOutput)")
+                case "test": builderAction = TestAction(engine: self)
+                case "run": builderAction = RunAction(engine: self)
+                case "metadata": builderAction = MetadataAction(engine: self)
+                case "build": builderAction = BuildAction(engine: self)
+                case "action": builderAction = ActionAction(engine: self)
+                default: builderAction = DefaultAction(engine: self)
             }
+            try builderAction.run(phase: phase, configuration: configuration, settings: settings)
         }
+
+        level -= 1
     }
 
     /**
@@ -347,10 +335,10 @@ public class Builder {
         // (we don't use `swift run` here as we don't want to capture any of its output)
         setStage("Configuring")
         let binPath = try swift("build", arguments: ["--product", configurationTarget, "--show-bin-path"])
-        output.log("- running config")
+        verbose.log("- running config")
         let configurePath = URL(fileURLWithPath:binPath.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)).appendingPathComponent(configurationTarget).path
         let json = try run(configurePath)
-        output.log("- parsing output")
+        verbose.log("- parsing output")
         let configuration = try parse(configuration: json)
         let configSettings = try configuration.resolve(for: command, configuration: self.configuration, platform: platform)
         let mapped = settings.mappedSettings(tool: "swift", settings: configSettings)
@@ -365,29 +353,5 @@ public class Builder {
         try execute(action: command, configuration: configuration, settings: mapped)
 
         output.log("\nDone.\n\n")
-    }
-
-    func writeMetadata(product: String) {
-        let build = environment["BUILDER_BUILD"] ?? "unknown"
-        let commit = environment["BUILDER_GIT_COMMIT"] ?? "unknown"
-        let tags = environment["BUILDER_GIT_TAGS"] ?? ""
-        let version = environment["BUILDER_VERSION"] ?? "0.0.0"
-        let metadata = """
-            struct Metadata {
-                let version: String
-                let build: String
-                let tags: String
-                let commit: String
-            }
-
-            let \(product)Metadata = Metadata(version: "\(version)", build: "\(build)", tags: "\(tags)", commit: "\(commit)")
-            """
-        let metadataURL = URL(fileURLWithPath: "./Sources").appendingPathComponent(product).appendingPathComponent("Metadata.swift")
-        do {
-            try metadata.write(to: metadataURL, atomically: true, encoding: String.Encoding.utf8)
-        } catch {
-            print(metadataURL)
-            print(error)
-        }
     }
 }
