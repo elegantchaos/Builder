@@ -16,8 +16,10 @@ class XCConfigSettingsMapper: SettingsMapper {
             "minimum-target": [
                 "prefix": ["MACOSX_DEPLOYMENT_TARGET = "],
                 "values" : [
+                    "macosx10.11": "10.11",
                     "macosx10.12": "10.12",
-                    "macosx10.13": "10.13"
+                    "macosx10.13": "10.13",
+                    "macosx10.14": "10.14"
                 ]
             ],
             "optimisation": [

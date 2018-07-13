@@ -16,8 +16,10 @@ class SwiftSettingsMapper: SettingsMapper {
             "minimum-target": [
                 "prefix": ["-Xswiftc", "-target", "-Xswiftc"],
                 "values": [
+                    "macosx10.11" : "x86_64-apple-macosx10.11",
                     "macosx10.12" : "x86_64-apple-macosx10.12",
-                    "macosx10.13" : "x86_64-apple-macosx10.13"
+                    "macosx10.13" : "x86_64-apple-macosx10.13",
+                    "macosx10.14" : "x86_64-apple-macosx10.14"
                 ]
             ],
             "optimisation": [
