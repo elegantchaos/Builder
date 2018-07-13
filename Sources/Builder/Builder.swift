@@ -286,9 +286,7 @@ public class Builder {
         }
 
         level += 1
-        if level > 1 {
-            indent = "- ".padding(toLength: (level - 1) * 2, withPad: " ", startingAt: 0)
-        }
+        indent = level > 1 ? "- ".padding(toLength: (level - 1) * 2, withPad: " ", startingAt: 0) : ""
 
         verbose.log("\(indent)Action: \(name).")
 
@@ -308,6 +306,7 @@ public class Builder {
         }
 
         level -= 1
+        indent = ""
     }
 
     /**
