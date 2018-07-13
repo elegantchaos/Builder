@@ -288,37 +288,16 @@ public class Builder {
         for phase in action {
             setStage(phase.name)
             let command = phase.command
+            let builderAction: BuilderAction
             switch (command) {
-            case "test":
-                let product = phase.arguments[0]
-                let toolOutput = try swift("test", arguments: ["--configuration", self.configuration] + settings)
-                output.log("- tested \(product).\n\n\(toolOutput)")
-            case "run":
-                var args: [String] = []
-                var product = "default product"
-                args.append(contentsOf: ["--configuration", self.configuration])
-                args.append(contentsOf: settings)
-                if phase.arguments.count > 0 {
-                    product = phase.arguments[0]
-                    args.append(product)
-                }
-                args.append(contentsOf: arguments)
-                let toolOutput = try swift("run", arguments: args)
-                output.log("- ran \(product).\n\n\(toolOutput)")
-            case "metadata":
-                let product = phase.arguments[0]
-                writeMetadata(product: product)
-            case "build":
-                let product = phase.arguments[0]
-                let _ = try swift("build", arguments: ["--product", product, "--configuration", self.configuration] + settings)
-                output.log("- built \(product).")
-            case "action":
-                let action = phase.arguments[0]
-                try execute(action: action, configuration: configuration, settings: settings)
-            default:
-                let toolOutput = try swift("run", arguments: settings + [command] + phase.arguments)
-                output.log("- ran \(command): \(toolOutput)")
+                case "test": builderAction = TestAction(engine: self)
+                case "run": builderAction = RunAction(engine: self)
+                case "metadata": builderAction = MetadataAction(engine: self)
+                case "build": builderAction = BuildAction(engine: self)
+                case "action": builderAction = ActionAction(engine: self)
+                default: builderAction = DefaultAction(engine: self)
             }
+            try builderAction.run(phase: phase, configuration: configuration, settings: settings)
         }
     }
 
@@ -365,29 +344,5 @@ public class Builder {
         try execute(action: command, configuration: configuration, settings: mapped)
 
         output.log("\nDone.\n\n")
-    }
-
-    func writeMetadata(product: String) {
-        let build = environment["BUILDER_BUILD"] ?? "unknown"
-        let commit = environment["BUILDER_GIT_COMMIT"] ?? "unknown"
-        let tags = environment["BUILDER_GIT_TAGS"] ?? ""
-        let version = environment["BUILDER_VERSION"] ?? "0.0.0"
-        let metadata = """
-            struct Metadata {
-                let version: String
-                let build: String
-                let tags: String
-                let commit: String
-            }
-
-            let \(product)Metadata = Metadata(version: "\(version)", build: "\(build)", tags: "\(tags)", commit: "\(commit)")
-            """
-        let metadataURL = URL(fileURLWithPath: "./Sources").appendingPathComponent(product).appendingPathComponent("Metadata.swift")
-        do {
-            try metadata.write(to: metadataURL, atomically: true, encoding: String.Encoding.utf8)
-        } catch {
-            print(metadataURL)
-            print(error)
-        }
     }
 }
