@@ -31,7 +31,8 @@ public class Builder {
     let arguments: [String]
     let settings = SettingsManager()
     var environment: [String:String] = ProcessInfo.processInfo.environment
-
+    var indent = ""
+    var level = 0
     lazy var swiftPath = findSwift()
     lazy var xcrunPath = findXCRun()
     lazy var gitPath = findGit()
@@ -267,9 +268,10 @@ public class Builder {
     /**
      Announce the build stage.
     */
+
     internal func setStage(_ stage : String, announce : Bool = true) {
         if announce {
-            output.log("\n\(stage):")
+            output.log("\(indent)\(stage).")
         }
         environment["BUILDER_STAGE"] = stage.lowercased()
     }
@@ -283,7 +285,16 @@ public class Builder {
             throw Failure.missingScheme(name: name)
         }
 
-        output.log("\nScheme:\n- \(name).")
+        level += 1
+        if level > 1 {
+            indent = ""
+            for n in 2..<level {
+                indent += "  "
+            }
+            indent += "- "
+        }
+
+        verbose.log("\(indent)Action: \(name).")
 
         for phase in action {
             setStage(phase.name)
@@ -299,6 +310,8 @@ public class Builder {
             }
             try builderAction.run(phase: phase, configuration: configuration, settings: settings)
         }
+
+        level -= 1
     }
 
     /**
@@ -326,10 +339,10 @@ public class Builder {
         // (we don't use `swift run` here as we don't want to capture any of its output)
         setStage("Configuring")
         let binPath = try swift("build", arguments: ["--product", configurationTarget, "--show-bin-path"])
-        output.log("- running config")
+        verbose.log("- running config")
         let configurePath = URL(fileURLWithPath:binPath.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)).appendingPathComponent(configurationTarget).path
         let json = try run(configurePath)
-        output.log("- parsing output")
+        verbose.log("- parsing output")
         let configuration = try parse(configuration: json)
         let configSettings = try configuration.resolve(for: command, configuration: self.configuration, platform: platform)
         let mapped = settings.mappedSettings(tool: "swift", settings: configSettings)
