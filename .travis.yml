@@ -1,7 +1,3 @@
-env:
-  global:
-    - SWIFT_BRANCH=swift-4.2-branch
-    - SWIFT_VERSION=swift-4.2-DEVELOPMENT-SNAPSHOT-2018-05-30-a
 matrix:
   include:
     - os: linux
@@ -9,6 +5,8 @@ matrix:
       dist: trusty
       sudo: required
       install:
+	- SWIFT_BRANCH=swift-5.0.1-release
+    	- SWIFT_VERSION=swift-5.0.1-RELEASE
         - sudo apt-get install clang libicu-dev
         - mkdir swift
         - curl https://swift.org/builds/$SWIFT_BRANCH/ubuntu1404/$SWIFT_VERSION/$SWIFT_VERSION-ubuntu14.04.tar.gz -s | tar xz -C swift &> /dev/null
@@ -19,13 +17,10 @@ matrix:
         - swift run builder -h
 
     - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode10.2
       language: swift
       sudo: required
       install:
-        - wget https://swift.org/builds/$SWIFT_BRANCH/xcode/$SWIFT_VERSION/$SWIFT_VERSION-osx.pkg
-        - sudo installer -pkg $SWIFT_VERSION-osx.pkg -target /
-        - export PATH="/Library/Developer/Toolchains/$SWIFT_VERSION.xctoolchain/usr/bin:$PATH"
         - swift package update
 
       script:
