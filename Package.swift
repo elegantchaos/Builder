@@ -12,8 +12,8 @@ let package = Package(
       .executable(name: "builder", targets: ["BuilderCommand"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/elegantchaos/Logger", from: "1.3.6"),
-        .package(url: "https://github.com/elegantchaos/docopt.swift", from: "0.6.11"),
+        .package(url: "https://github.com/elegantchaos/Logger.git", from: "1.3.6"),
+        .package(url: "https://github.com/elegantchaos/docopt.swift.git", from: "0.6.11"),
         ],
     targets: [
       .target(
