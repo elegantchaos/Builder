@@ -1,16 +1,19 @@
-// swift-tools-version:4.2
-// The swift-tools-version declares the minimum version of Swift required to build this package.
+// swift-tools-version:5.0
 
 import PackageDescription
 
 let package = Package(
     name: "Builder",
+    platforms: [
+      .macOS(.v10_13)
+    ],
+ 
     products: [
       .executable(name: "builder", targets: ["BuilderCommand"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/elegantchaos/Logger", from: "1.0.8"),
-        .package(url: "https://github.com/elegantchaos/docopt.swift", from: "0.6.8"),
+        .package(url: "https://github.com/elegantchaos/Logger", from: "1.3.6"),
+        .package(url: "https://github.com/elegantchaos/docopt.swift", from: "0.6.11"),
         ],
     targets: [
       .target(
