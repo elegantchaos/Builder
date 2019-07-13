@@ -12,7 +12,7 @@ let doc = """
 Build, test, and run SwiftPM packages.
 
 Usage:
-    builder [<action>] [--configuration <config>] [--platform <platform>] [--] [<other>...]
+    builder [<action>] [--configuration <config>] [--platform <platform>] [--logs=<logs>] [--] [<other>...]
     builder (-h | --help)
 
 Arguments:
@@ -23,9 +23,7 @@ Options:
     -h, --help                      Show this text.
     -c, --configuration <config>    The configuration to build [default: debug].
     -p, --platform <platform>       The platform to build. Defaults to the current platform you're building on.
-    -logs <logs>                    Specify all log channels to enable.
-    -logs+ <logs>                   Specify additional log channels to enable.
-    -logs- <logs>                   Specify log channels to disable.
+    --logs=<logs>                   Configure logging.
 
 Examples:
     builder build --configuration release
@@ -41,6 +39,7 @@ let verbose = Logger("com.elegantchaos.builder.verbose", handlers:[PrintHandler(
 var args = Arguments(documentation: doc)
 let command = args.argument("action", default: "build")
 
+
 do {
     let configuration = try args.option("configuration")
     let platform = args.option("platform", default:Platform.currentPlatform())
@@ -51,8 +50,8 @@ do {
     error.logAndExit(output)
 } catch let error as NSError {
     output.log("Failed: \(error)")
-    exit(Int32(error.code))
+    Builder.exit(code: error.code)
 } catch {
     output.log("Failed: \(error)")
-    exit(-1)
+    Builder.exit(code: -1)
 }
