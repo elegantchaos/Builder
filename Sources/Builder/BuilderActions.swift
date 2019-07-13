@@ -33,6 +33,13 @@ class BuildAction: BuilderAction {
             args.append("--product")
             args.append(product)
         }
+        
+        // if something has placed an info plist file into the build products folder, link it in
+        let infoPath = ".build/\(engine.configuration)/\(product)_info.plist"
+        if FileManager.default.fileExists(atPath: infoPath) {
+            args.append(contentsOf: ["-Xlinker", "-sectcreate", "-Xlinker", "__TEXT", "-Xlinker", "__Info_plist", "-Xlinker", infoPath])
+        }
+        
         args.append(contentsOf: settings)
         return (product, args)
     }

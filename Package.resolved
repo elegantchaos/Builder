@@ -3,7 +3,7 @@
     "pins": [
       {
         "package": "Docopt",
-        "repositoryURL": "https://github.com/elegantchaos/docopt.swift",
+        "repositoryURL": "https://github.com/elegantchaos/docopt.swift.git",
         "state": {
           "branch": null,
           "revision": "fa71fca4b4e7411c70a21ef89256cd04a64c6dda",
@@ -12,11 +12,11 @@
       },
       {
         "package": "Logger",
-        "repositoryURL": "https://github.com/elegantchaos/Logger",
+        "repositoryURL": "https://github.com/elegantchaos/Logger.git",
         "state": {
           "branch": null,
-          "revision": "65d89667f72e480aba8ed37c3d874a0c5349a005",
-          "version": "1.3.6"
+          "revision": "c101ca48876adabeb25848f5fe0efba748c24d73",
+          "version": "1.3.7"
         }
       }
     ]
