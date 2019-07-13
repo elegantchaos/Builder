@@ -52,6 +52,7 @@ public enum Failure : Error {
             case .unknownOption(let name):
                 output.log("Tried to read unknown option: \(name)")
         }
+        Logger.defaultManager.flush()
         exit(self.exitCode)
     }
 }
