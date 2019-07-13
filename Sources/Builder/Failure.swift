@@ -40,19 +40,18 @@ public enum Failure : Error {
     Output a log message describing the failure, then exit.
     */
 
-    public func logAndExit(_ output: Logger) {
+    public func logAndExit(_ channel: Channel) {
         switch self {
             case .decodingFailed:
-                output.log("Couldn't decode JSON")
+                channel.log("Couldn't decode JSON")
             case .failed(let stdout, let stderr):
-                output.log(stdout ?? "Failure:")
-                output.log(stderr ?? "")
+                channel.log(stdout ?? "Failure:")
+                channel.log(stderr ?? "")
             case .missingScheme(let name):
-                output.log("Couldn't find scheme: \(name)")
+                channel.log("Couldn't find scheme: \(name)")
             case .unknownOption(let name):
-                output.log("Tried to read unknown option: \(name)")
+                channel.log("Tried to read unknown option: \(name)")
         }
-        Logger.defaultManager.flush()
-        exit(self.exitCode)
+        Builder.exit(code: self.exitCode)
     }
 }

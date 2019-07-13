@@ -183,7 +183,7 @@ public class Builder {
         process.environment = self.environment
         process.launch()
         process.waitUntilExit()
-        exit(process.terminationStatus)
+        Builder.exit(code: process.terminationStatus)
     }
 
 
@@ -359,6 +359,15 @@ public class Builder {
         // execute the action associated with the primary command we were passed (run/build/test/etc)
         try execute(action: command, configuration: configuration, settings: mapped)
 
-        output.log("\nDone.\n\n")
+        output.log("Done.\n\n")
+    }
+
+    public class func exit(code: Int) {
+        exit(code: Int32(code))
+    }
+
+    public class func exit(code: Int32) {
+        Logger.defaultManager.flush()
+        Foundation.exit(Int32(code))
     }
 }
