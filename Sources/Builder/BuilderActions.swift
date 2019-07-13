@@ -15,16 +15,8 @@ class BuilderAction {
 
     func run(phase: Phase, configuration : Configuration, settings: [String]) throws {
     }
-}
 
-class BuildAction: BuilderAction {
-    override func run(phase: Phase, configuration : Configuration, settings: [String]) throws {
-        let (product, args) = arguments(for: phase, configuration: configuration, settings: settings)
-        let _ = try engine.swift("build", arguments: args)
-        engine.output.log("\(engine.indent)Built \(product).")
-    }
-
-    func arguments(for phase: Phase, configuration : Configuration, settings: [String]) -> (String, [String]) {
+    func arguments(for phase: Phase, configuration : Configuration, settings: [String]) throws -> (String, [String]) {
         var args: [String] = []
         args.append(contentsOf: ["--configuration", engine.configuration])
         var product = "default product"
@@ -34,20 +26,42 @@ class BuildAction: BuilderAction {
             args.append(product)
         }
         
-        // if something has placed an info plist file into the build products folder, link it in
-        let infoPath = engine.linkablePlistPath(for: product)
-        if FileManager.default.fileExists(atPath: infoPath) {
-            args.append(contentsOf: ["-Xlinker", "-sectcreate", "-Xlinker", "__TEXT", "-Xlinker", "__Info_plist", "-Xlinker", infoPath])
-        }
-        
         args.append(contentsOf: settings)
         return (product, args)
     }
 }
 
-class RunAction: BuildAction {
+class BuildAction: BuilderAction {
     override func run(phase: Phase, configuration : Configuration, settings: [String]) throws {
-        var (product, args) = arguments(for: phase, configuration: configuration, settings: settings)
+        let (product, args) = try arguments(for: phase, configuration: configuration, settings: settings)
+        let _ = try engine.swift("build", arguments: args)
+        engine.output.log("\(engine.indent)Built \(product).")
+    }
+
+    override func arguments(for phase: Phase, configuration : Configuration, settings: [String]) throws -> (String, [String]) {
+        var (product, args) = try super.arguments(for: phase, configuration: configuration, settings: settings)
+
+        args.append("--show-bin-path")
+        let path = try engine.swift("build", arguments: args).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        args.removeLast()
+
+        // if something has placed an info plist file into the build products folder, link it in
+        let infoPath = "\(path)/\(product)_info.plist"
+        if FileManager.default.fileExists(atPath: infoPath) {
+            args.append(contentsOf: ["-Xlinker", "-sectcreate", "-Xlinker", "__TEXT", "-Xlinker", "__Info_plist", "-Xlinker", infoPath])
+
+            // remove executable to ensure it's re-linked
+            let url = URL(fileURLWithPath: path).appendingPathComponent(product)
+            try? FileManager.default.removeItem(at: url)
+        }
+
+        return (product, args)
+    }
+}
+
+class RunAction: BuilderAction {
+    override func run(phase: Phase, configuration : Configuration, settings: [String]) throws {
+        var (product, args) = try super.arguments(for: phase, configuration: configuration, settings: settings)
         args.append("--show-bin-path")
         let path = try engine.swift("build", arguments: args).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         let url = URL(fileURLWithPath: path).appendingPathComponent(product)
@@ -59,14 +73,15 @@ class RunAction: BuildAction {
 class MetadataAction: BuilderAction {
     override func run(phase: Phase, configuration : Configuration, settings: [String]) throws {
         let product = phase.arguments[0]
-        writeMetadata(product: product)
+        let plist = phase.arguments.count > 1 ? phase.arguments[1] : "Info.plist"
+        writeMetadata(product: product, plistName: plist)
     }
 
-    func writeMetadata(product: String) {
+    func writeMetadata(product: String, plistName: String) {
         let environment = engine.environment
         var info: [String:Any] = [:]
 
-        let sourcePath = "./Sources/\(product)/Info.plist"
+        let sourcePath = "./Sources/\(product)/\(plistName)"
         if let data = try? Data(contentsOf: URL(fileURLWithPath: sourcePath)) {
             if let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) {
                 if let existing = plist as? [String:Any] {
