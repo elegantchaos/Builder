@@ -35,7 +35,7 @@ class BuildAction: BuilderAction {
         }
         
         // if something has placed an info plist file into the build products folder, link it in
-        let infoPath = ".build/\(engine.configuration)/\(product)_info.plist"
+        let infoPath = engine.linkablePlistPath(for: product)
         if FileManager.default.fileExists(atPath: infoPath) {
             args.append(contentsOf: ["-Xlinker", "-sectcreate", "-Xlinker", "__TEXT", "-Xlinker", "__Info_plist", "-Xlinker", infoPath])
         }
@@ -64,26 +64,14 @@ class MetadataAction: BuilderAction {
 
     func writeMetadata(product: String) {
         let environment = engine.environment
-        let build = environment["BUILDER_BUILD"] ?? "unknown"
-        let commit = environment["BUILDER_GIT_COMMIT"] ?? "unknown"
-        let tags = environment["BUILDER_GIT_TAGS"] ?? ""
-        let version = environment["BUILDER_VERSION"] ?? "0.0.0"
-        let metadata = """
-        struct Metadata {
-            let version: String
-            let build: String
-            let tags: String
-            let commit: String
-        }
-
-        let \(product)Metadata = Metadata(version: "\(version)", build: "\(build)", tags: "\(tags)", commit: "\(commit)")
-        """
-        let metadataURL = URL(fileURLWithPath: "./Sources").appendingPathComponent(product).appendingPathComponent("Metadata.swift")
-        do {
-            try metadata.write(to: metadataURL, atomically: true, encoding: String.Encoding.utf8)
-        } catch {
-            print(metadataURL)
-            print(error)
+        var info: [String:String] = [:]
+        info["CFBundleVersion"] = environment["BUILDER_BUILD"]
+        info["CFBundleShortVersionString"] = environment["BUILDER_VERSION"]
+        info["GitCommit"] = environment["BUILDER_GIT_COMMIT"]
+        info["GitTags"] = environment["BUILDER_GIT_TAGS"]
+        let path = engine.linkablePlistPath(for: product)
+        if let data = try? PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0) {
+            try? data.write(to: URL(fileURLWithPath: path))
         }
     }
 }

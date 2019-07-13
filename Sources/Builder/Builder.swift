@@ -36,7 +36,8 @@ public class Builder {
     lazy var swiftPath = findSwift()
     lazy var xcrunPath = findXCRun()
     lazy var gitPath = findGit()
-
+    lazy var buildPath = findBuildPath()
+    
     public init(command: String = "build", configuration: String = "debug", platform: String = Platform.currentPlatform(), output: Logger, verbose: Logger, arguments: [String]) {
         self.command = command
         self.configuration = configuration
@@ -116,7 +117,14 @@ public class Builder {
 
     }
 
-
+    func findBuildPath() -> String {
+        return ".build/\(configuration)"
+    }
+    
+    func linkablePlistPath(for product: String) -> String {
+        return "\(buildPath)/\(product)_info.plist"
+    }
+    
     /**
      Return the path to the swift binary.
      */
