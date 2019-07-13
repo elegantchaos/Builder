@@ -64,14 +64,28 @@ class MetadataAction: BuilderAction {
 
     func writeMetadata(product: String) {
         let environment = engine.environment
-        var info: [String:String] = [:]
+        var info: [String:Any] = [:]
+
+        let sourcePath = "./Sources/\(product)/Info.plist"
+        if let data = try? Data(contentsOf: URL(fileURLWithPath: sourcePath)) {
+            if let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) {
+                if let existing = plist as? [String:Any] {
+                    info.merge(existing, uniquingKeysWith: { (key1, key2) in return key1 })
+                }
+            }
+        }
+
         info["CFBundleVersion"] = environment["BUILDER_BUILD"]
         info["CFBundleShortVersionString"] = environment["BUILDER_VERSION"]
         info["GitCommit"] = environment["BUILDER_GIT_COMMIT"]
         info["GitTags"] = environment["BUILDER_GIT_TAGS"]
+
         let path = engine.linkablePlistPath(for: product)
-        if let data = try? PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0) {
-            try? data.write(to: URL(fileURLWithPath: path))
+        do {
+            let data = try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0)
+            try data.write(to: URL(fileURLWithPath: path))
+        } catch {
+            print(error)
         }
     }
 }
