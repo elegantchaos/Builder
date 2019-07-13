@@ -73,16 +73,16 @@ class RunAction: BuilderAction {
 class MetadataAction: BuilderAction {
     override func run(phase: Phase, configuration : Configuration, settings: [String]) throws {
         let product = phase.arguments[0]
-        let plist = phase.arguments.count > 1 ? phase.arguments[1] : "Info.plist"
-        writeMetadata(product: product, plistName: plist)
+        let plist = phase.arguments.count > 1 ? phase.arguments[1] : "Sources/\(product)/Info.plist"
+        writeMetadata(product: product, plistPath: plist)
     }
 
-    func writeMetadata(product: String, plistName: String) {
+    func writeMetadata(product: String, plistPath: String) {
         let environment = engine.environment
         var info: [String:Any] = [:]
 
-        let sourcePath = "./Sources/\(product)/\(plistName)"
-        if let data = try? Data(contentsOf: URL(fileURLWithPath: sourcePath)) {
+        let cwd = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        if let data = try? Data(contentsOf: cwd.appendingPathComponent(plistPath)) {
             if let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) {
                 if let existing = plist as? [String:Any] {
                     info.merge(existing, uniquingKeysWith: { (key1, key2) in return key1 })
