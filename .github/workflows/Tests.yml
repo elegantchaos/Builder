@@ -75,56 +75,26 @@ jobs:
         steps:
         - name: Checkout
           uses: actions/checkout@v1
-        - name: Swift Version
-          run: swift --version
+        - name: Install Nightly 5.2 Toolchain
+          run: |
+            branch="swift-5.2-branch"
+            wget --quiet https://swift.org/builds/$branch/xcode/latest-build.yml
+            grep "download:" < latest-build.yml > filtered.yml
+            sed -e 's/-osx.pkg//g' filtered.yml > stripped.yml
+            sed -e 's/:[^:\/\/]/YML="/g;s/$/"/g;s/ *=/=/g' stripped.yml > snapshot.sh
+            source snapshot.sh
+            echo "Installing Toolchain: $downloadYML"
+            wget --quiet https://swift.org/builds/$branch/xcode/$downloadYML/$downloadYML-osx.pkg
+            sudo installer -pkg $downloadYML-osx.pkg -target /
+            ln -s "/Library/Developer/Toolchains/$downloadYML.xctoolchain/usr/bin" swift-latest
+            export PATH="swift-latest:$PATH"
+            swift --version
         - name: Make Logs Directory
           run: mkdir logs
-        - name: Xcode Version
-          run: xcodebuild -version
-        - name: XC Pretty
-          run: sudo gem install xcpretty-travis-formatter
-        - name: Detect Workspace & Scheme
-          run: |
-            WORKSPACE="Builder.xcworkspace"
-            if [[ ! -e "$WORKSPACE" ]]
-            then
-                WORKSPACE="."
-                GOTPACKAGE=$(xcodebuild -workspace . -list | (grep Builder-Package || true))
-                if [[ $GOTPACKAGE != "" ]]
-                then
-                    SCHEME="Builder-Package"
-                else
-                    SCHEME="Builder"
-                fi
-                MACOS_SCHEME="$SCHEME"
-                IOS_SCHEME="$SCHEME"
-                TVOS_SCHEME="$SCHEME"
-                WATCHOS_SCHEME="$SCHEME"
-            else
-                MACOS_SCHEME="Builder-macOS"
-                IOS_SCHEME="Builder-iOS"
-                TVOS_SCHEME="Builder-tvOS"
-                WATCHOS_SCHEME="Builder-watchOS"
-            fi
-            echo "WORKSPACE='$WORKSPACE'; SCHEME='$MACOS_SCHEME'" > names-macOS.sh
-            echo "WORKSPACE='$WORKSPACE'; SCHEME='$IOS_SCHEME'" > names-iOS.sh
-            echo "WORKSPACE='$WORKSPACE'; SCHEME='$TVOS_SCHEME'" > names-tvOS.sh
-            echo "WORKSPACE='$WORKSPACE'; SCHEME='$WATCHOS_SCHEME'" > names-watchOS.sh
-        - name: Build (macOS/Debug)
-          run: |
-            set -o pipefail
-            source "names-macOS.sh"
-            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Debug CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-macOS-build-debug.log | xcpretty
-        - name: Build (macOS/Release)
-          run: |
-            set -o pipefail
-            source "names-macOS.sh"
-            xcodebuild clean build -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | tee logs/xcodebuild-macOS-build-release.log | xcpretty
-        - name: Upload Logs
-          uses: actions/upload-artifact@v1
-          with:
-            name: logs
-            path: logs
+        - name: Build (Debug)
+          run: export PATH="swift-latest:$PATH"; swift build -v -c debug
+        - name: Build (Release)
+          run: export PATH="swift-latest:$PATH"; swift build -v -c release
         - name: Slack Notification
           uses: elegantchaos/slatify@master
           if: always()
