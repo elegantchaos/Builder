@@ -34,9 +34,9 @@ jobs:
             export PATH="swift-latest:$PATH"
             swift --version
         - name: Build (Debug)
-          run: swift build -c debug
+          run: export PATH="swift-latest:$PATH"; swift build -c debug
         - name: Build (Release)
-          run: swift build -c release
+          run: export PATH="swift-latest:$PATH"; swift build -c release
         - name: Upload Logs
           uses: actions/upload-artifact@v1
           with:
@@ -64,9 +64,9 @@ jobs:
         - name: Make Logs Directory
           run: mkdir logs
         - name: Build (Debug)
-          run: export PATH="swift-latest:$PATH"; swift build -c debug
+          run: swift build -c debug
         - name: Build (Release)
-          run: export PATH="swift-latest:$PATH"; swift build -c release
+          run: swift build -c release
         - name: Upload Logs
           uses: actions/upload-artifact@v1
           with:
