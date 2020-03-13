@@ -31,79 +31,8 @@ class BuilderAction {
     }
 }
 
-class BuildAction: BuilderAction {
-    override func run(phase: Phase, configuration : Configuration, settings: [String]) throws {
-        let (product, args) = try arguments(for: phase, configuration: configuration, settings: settings)
-        let _ = try engine.swift("build", arguments: args)
-        engine.output.log("\(engine.indent)Built \(product).")
-    }
 
-    override func arguments(for phase: Phase, configuration : Configuration, settings: [String]) throws -> (String, [String]) {
-        var (product, args) = try super.arguments(for: phase, configuration: configuration, settings: settings)
 
-        args.append("--show-bin-path")
-        let path = try engine.swift("build", arguments: args).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-        args.removeLast()
-
-        // if something has placed an info plist file into the build products folder, link it in
-        let infoPath = "\(path)/\(product)_info.plist"
-        if FileManager.default.fileExists(atPath: infoPath) {
-            args.append(contentsOf: ["-Xlinker", "-sectcreate", "-Xlinker", "__TEXT", "-Xlinker", "__Info_plist", "-Xlinker", infoPath])
-
-            // remove executable to ensure it's re-linked
-            let url = URL(fileURLWithPath: path).appendingPathComponent(product)
-            try? FileManager.default.removeItem(at: url)
-        }
-
-        return (product, args)
-    }
-}
-
-class RunAction: BuilderAction {
-    override func run(phase: Phase, configuration : Configuration, settings: [String]) throws {
-        var (product, args) = try super.arguments(for: phase, configuration: configuration, settings: settings)
-        args.append("--show-bin-path")
-        let path = try engine.swift("build", arguments: args).trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
-        let url = URL(fileURLWithPath: path).appendingPathComponent(product)
-        let toolOutput = try engine.run(url.path, arguments: Array(phase.arguments.dropFirst()))
-        engine.output.log("\(engine.indent)Ran \(product).\n\n\(toolOutput)")
-    }
-}
-
-class MetadataAction: BuilderAction {
-    override func run(phase: Phase, configuration : Configuration, settings: [String]) throws {
-        let product = phase.arguments[0]
-        let plist = phase.arguments.count > 1 ? phase.arguments[1] : "Sources/\(product)/Info.plist"
-        writeMetadata(product: product, plistPath: plist)
-    }
-
-    func writeMetadata(product: String, plistPath: String) {
-        let environment = engine.environment
-        var info: [String:Any] = [:]
-
-        let cwd = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        if let data = try? Data(contentsOf: cwd.appendingPathComponent(plistPath)) {
-            if let plist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) {
-                if let existing = plist as? [String:Any] {
-                    info.merge(existing, uniquingKeysWith: { (key1, key2) in return key1 })
-                }
-            }
-        }
-
-        info["CFBundleVersion"] = environment["BUILDER_BUILD"]
-        info["CFBundleShortVersionString"] = environment["BUILDER_VERSION"]
-        info["GitCommit"] = environment["BUILDER_GIT_COMMIT"]
-        info["GitTags"] = environment["BUILDER_GIT_TAGS"]
-
-        let path = engine.linkablePlistPath(for: product)
-        do {
-            let data = try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0)
-            try data.write(to: URL(fileURLWithPath: path))
-        } catch {
-            print(error)
-        }
-    }
-}
 
 class TestAction: BuilderAction {
     override func run(phase: Phase, configuration : Configuration, settings: [String]) throws {
