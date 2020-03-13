@@ -12,7 +12,7 @@ let package = Package(
         .executable(name: "builder", targets: ["Builder"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/elegantchaos/Logger.git", from: "1.3.6"),
+        .package(url: "https://github.com/elegantchaos/Logger.git", from: "1.5.2"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "0.0.2")
     ],
     targets: [
