@@ -15,11 +15,11 @@ struct Command: ParsableCommand {
         )
     
     @Argument(help: "The action to perform.") var action: String?
-    @Option(default: "debug", help: "The configuration to build.") var configuration: String
+    @Option(help: "The configuration to build.") var configuration = "debug"
     @Option(help: "The platform to build. Defaults to the current platform you're building on.") var platform: String?
-    @Flag(help: "Show the version.") var version: Bool
-    @Flag(help: "Show verbose logging.") var verbose: Bool
-    @Argument(help: "") var rest: [String]
+    @Flag(help: "Show the version.") var version = false
+    @Flag(help: "Show verbose logging.") var verbose = false
+    @Argument(help: "") var rest: [String] = []
     
     func run() throws {
         if version {
