@@ -1,31 +1,30 @@
-// swift-tools-version:5.0
+// swift-tools-version:5.2
 
 import PackageDescription
 
 let package = Package(
     name: "Builder",
     platforms: [
-      .macOS(.v10_13)
+        .macOS(.v10_13)
     ],
- 
+    
     products: [
-      .executable(name: "builder", targets: ["BuilderCommand"]),
+        .executable(name: "builder", targets: ["Builder"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/elegantchaos/Logger.git", from: "1.3.6"),
-        .package(url: "https://github.com/elegantchaos/docopt.swift.git", from: "0.6.11"),
-        ],
+        .package(url: "https://github.com/elegantchaos/Logger.git", from: "1.5.2"),
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "0.0.2")
+    ],
     targets: [
-      .target(
-          name: "BuilderCommand",
-          dependencies: ["Builder"]),
         .target(
             name: "Builder",
-            dependencies: ["Docopt", "Logger"]),
+            dependencies: [
+                "Logger",
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
+        ]),
         .testTarget(
             name: "BuilderTests",
             dependencies: ["Builder"]
         )
-    ],
-    swiftLanguageVersions: [.v4_2]
+    ]
 )

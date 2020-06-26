@@ -306,6 +306,7 @@ public class Builder {
                 case "test": builderAction = TestAction(engine: self)
                 case "run": builderAction = RunAction(engine: self)
                 case "metadata": builderAction = MetadataAction(engine: self)
+                case "metafile": builderAction = MetafileAction(engine: self)
                 case "build": builderAction = BuildAction(engine: self)
                 case "action": builderAction = ActionAction(engine: self)
                 default: builderAction = DefaultAction(engine: self)
