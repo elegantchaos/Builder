@@ -8,8 +8,9 @@ import Foundation
 class BuildAction: BuilderAction {
     override func run(phase: Phase, configuration : Configuration, settings: [String]) throws {
         let (product, args) = try arguments(for: phase, configuration: configuration, settings: settings)
-        let _ = try engine.swift("build", arguments: args)
+        let output = try engine.swift("build", arguments: args)
         engine.output.log("\(engine.indent)Built \(product).")
+        engine.verbose.log(output)
     }
 
     override func arguments(for phase: Phase, configuration : Configuration, settings: [String]) throws -> (String, [String]) {
