@@ -19,8 +19,15 @@ let package = Package(
         .target(
             name: "Builder",
             dependencies: [
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                "BuilderCore",
                 "Logger",
-                .product(name: "ArgumentParser", package: "swift-argument-parser")
+        ]),
+        .target(
+            name: "BuilderCore",
+            dependencies: [
+                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                "Logger",
         ]),
         .testTarget(
             name: "BuilderTests",

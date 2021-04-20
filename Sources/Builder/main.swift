@@ -4,9 +4,10 @@
 // For licensing terms, see http://elegantchaos.com/license/liberal/.
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
-import Logger
 import ArgumentParser
+import BuilderCore
 import Foundation
+import Logger
 
 struct Command: ParsableCommand {
     static var configuration =
