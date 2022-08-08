@@ -18,7 +18,7 @@
 
 **_Update:_**
 
-_Whilst not perfect, the new [Swift Package Manager Plugins](https://github.com/apple/swift-package-manager/blob/main/Documentation/Plugins.md) provide most of the facilities that my Builder experiment was aimed at. Therefore, this tool will be archived. _
+_Whilst not perfect, the new [Swift Package Manager Plugins](https://github.com/apple/swift-package-manager/blob/main/Documentation/Plugins.md) provide most of the facilities that my Builder experiment was aimed at. Therefore, this tool will be archived._
 
 # Builder
 
