@@ -16,9 +16,9 @@
 
 [comment]: <> (End of ActionStatus Header)
 
-_Update:_
+**_Update:_**
 
-Whilst not perfect, the new [Swift Package Manager Plugins](https://github.com/apple/swift-package-manager/blob/main/Documentation/Plugins.md) provide most of the facilities that my Builder experiment was aimed at. Therefore, this tool will be archived. 
+_Whilst not perfect, the new [Swift Package Manager Plugins](https://github.com/apple/swift-package-manager/blob/main/Documentation/Plugins.md) provide most of the facilities that my Builder experiment was aimed at. Therefore, this tool will be archived. _
 
 # Builder
 
